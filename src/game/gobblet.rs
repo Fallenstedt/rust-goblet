@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GobbletSize {
     Tiny,
     Small,
@@ -6,7 +6,7 @@ pub enum GobbletSize {
     Large
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Gobblet {
     size: GobbletSize
 }

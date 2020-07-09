@@ -4,6 +4,7 @@ mod game;
 
 use wasm_bindgen::prelude::*;
 use game::player::Player;
+use game::board::Board;
 
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -26,11 +27,14 @@ pub fn new_game() {
     //  Create 12 pieces for each player,  3x Tiny 3x Small, 3x Medium, 3x Large
     let p1 = Player::new(String::from("Alex"));
     let p2 = Player::new(String::from("Angelica"));
+    
     log!("{:?}", p1);
     log!("{:?}", p2);
     // Create Game Board
     //  16 squares 4x4 grid
-    //  Each square can have stack of 3 pieces
+    //  Each square can have stack of 4 pieces
+    let board = Board::new();
+    log!("{:?}", board);
     // Create Game Manager
     //  Know whose turn it is
     //  Check if player one per move
