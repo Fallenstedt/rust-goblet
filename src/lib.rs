@@ -1,10 +1,13 @@
+
+extern crate js_sys;
+extern crate wasm_bindgen;
+
 mod macros;
 mod utils;
 mod game;
 
 use wasm_bindgen::prelude::*;
 use game::manager::Manager;
-
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -23,5 +26,6 @@ pub fn main_js() -> Result<(), JsValue> {
 #[wasm_bindgen]
 pub fn new_game() {
     let manager = Manager::new(String::from("Alex"), String::from("Angelica"));
-
+    let current_turn = manager.get_turn();
+    log!("{:?}", current_turn);
 }

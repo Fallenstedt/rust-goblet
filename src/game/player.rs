@@ -11,4 +11,8 @@ impl Player {
         let hand = Hand::new();
         Player{ name, hand }
     }
+
+    pub fn move_piece_from_hand(&self, section: u8) {
+
+    }
 }
