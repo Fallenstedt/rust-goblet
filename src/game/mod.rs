@@ -1,4 +1,5 @@
 mod gobblet;
 mod hand; 
-pub mod player;
-pub mod board;
+mod player;
+mod board;
+pub mod manager;
