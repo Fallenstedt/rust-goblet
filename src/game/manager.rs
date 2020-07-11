@@ -31,6 +31,10 @@ impl Manager {
         &self.turn
     }
 
+    pub fn get_board(&mut self) -> &mut Board {
+        &mut self.board
+    }
+
     pub fn get_current_player(&mut self) -> &mut Player {
         match &self.turn {
             Turn::Player1 => &mut self.player1,
