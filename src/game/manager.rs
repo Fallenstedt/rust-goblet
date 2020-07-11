@@ -1,6 +1,6 @@
 use super::player::Player;
 use super::board::Board;
-use super::gobblet::Gobblet;
+
 use js_sys::Math;
 
 #[derive(Debug)]
@@ -29,6 +29,13 @@ impl Manager {
 
     pub fn get_turn(&self) -> &Turn {
         &self.turn
+    }
+
+    pub fn get_current_player(&mut self) -> &mut Player {
+        match &self.turn {
+            Turn::Player1 => &mut self.player1,
+            Turn::Player2 => &mut self.player2
+        }
     }
 
     fn random_turn() -> Turn {

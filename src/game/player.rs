@@ -1,4 +1,5 @@
 use super::hand::Hand;
+use super::gobblet::Gobblet;
 
 #[derive(Debug)]
 pub struct Player {
@@ -12,7 +13,7 @@ impl Player {
         Player{ name, hand }
     }
 
-    pub fn move_piece_from_hand(&self, section: u8) {
-
+    pub fn remove_piece_from_hand(&mut self, hand_section: u8) -> Option<Gobblet> {
+        self.hand.remove_piece(hand_section)
     }
 }

@@ -22,4 +22,13 @@ impl Hand {
         }
         Hand { state }
     }
+
+    pub fn remove_piece(&mut self, s: u8) -> Option<Gobblet> {
+        let hand_section = self.state.get_mut(&s);
+
+        match hand_section {
+            Some(pieces) => pieces.pop(),
+            None => None
+        }
+    }
 }

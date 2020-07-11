@@ -25,7 +25,17 @@ pub fn main_js() -> Result<(), JsValue> {
 
 #[wasm_bindgen]
 pub fn new_game() {
-    let manager = Manager::new(String::from("Alex"), String::from("Angelica"));
-    let current_turn = manager.get_turn();
-    log!("{:?}", current_turn);
+    let mut manager = Manager::new(String::from("Alex"), String::from("Angelica"));
+    let current_player = manager.get_current_player();
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    current_player.remove_piece_from_hand(1);
+    let d = current_player.remove_piece_from_hand(1);
+    log!("{:?}", d);
+
+    
 }
