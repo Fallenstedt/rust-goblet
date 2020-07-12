@@ -4,7 +4,7 @@ authors = ["Alex Fallenstedt <alex.fallenstedt@streem.pro>", "Adam Michel <adam.
 categories = ["wasm"]
 description = "todo add desc"
 edition = "2018"
-name = "optical-character-recognition-wasm"
+name = "gobblet"
 readme = "README.md"
 version = "0.1.0"
 
