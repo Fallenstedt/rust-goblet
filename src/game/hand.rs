@@ -8,15 +8,15 @@ pub struct Hand {
 }
 
 impl Hand {
-    pub fn new() -> Hand {
+    pub fn new(name: String) -> Hand {
         let mut state = HashMap::new();
         
         for i in 1..4 {
             let mut group = Vec::with_capacity(4);
-            group.push(Gobblet::new(GobbletSize::Tiny));
-            group.push(Gobblet::new(GobbletSize::Small));
-            group.push(Gobblet::new(GobbletSize::Medium));
-            group.push(Gobblet::new(GobbletSize::Large));
+            group.push(Gobblet::new(GobbletSize::Tiny, name.clone()));
+            group.push(Gobblet::new(GobbletSize::Small, name.clone()));
+            group.push(Gobblet::new(GobbletSize::Medium, name.clone()));
+            group.push(Gobblet::new(GobbletSize::Large, name.clone()));
 
             state.insert(i, group);
         }
