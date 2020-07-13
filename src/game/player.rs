@@ -9,7 +9,7 @@ pub struct Player {
 
 impl Player {
     pub fn new(name: String) -> Player {
-        let hand = Hand::new();
+        let hand = Hand::new(name.clone());
         Player{ name, hand }
     }
 

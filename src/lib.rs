@@ -35,7 +35,6 @@ pub fn new_game() {
     
     /**
      * problems
-     * 1. Pieces on board have no names. Who owns which piece?
      * 2. Pieces can stack in incorret order
     */
     board.add_piece_to_board(Coord::new(1, 1), gobblet);
