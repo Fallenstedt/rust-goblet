@@ -11,11 +11,17 @@ impl Board {
         Board { cells: Board::build_cells() }
     }
 
-    pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet){
+    pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
         let r = *coord.get_row() as usize;
         let c = *coord.get_column() as usize;
-        
-        &self.cells[r][c].add(gobblet);
+        let cell = &mut self.cells[r][c];
+
+        return if cell.can_add(&gobblet) {
+            cell.add(gobblet);
+            None
+        } else {
+            Some(gobblet)
+        }
     }
 
     // Create 2 dimenson array of cells. 
@@ -46,7 +52,7 @@ impl Cell {
         self.state.push(gobblet);
     }
 
-    fn can_add(&self, pending_gobblet: Gobblet) -> bool {
+    fn can_add(&self, pending_gobblet: &Gobblet) -> bool {
         if self.state.is_empty() {
             return true;
         }
@@ -71,7 +77,7 @@ mod tests {
     #[test]
     fn can_add_should_return_true_if_cell_is_empty() {
         let c = Cell::new();
-        let r = c.can_add(Gobblet::new(GobbletSize::Tiny, String::from("Angelica")));
+        let r = c.can_add(&Gobblet::new(GobbletSize::Tiny, String::from("Angelica")));
         assert_eq!(r, true);
     }
 
@@ -82,9 +88,9 @@ mod tests {
         c.add(Gobblet::new(GobbletSize::Tiny, String::from("Angelica")));
 
         // When Small, Medium, Large 
-        let s = c.can_add(Gobblet::new(GobbletSize::Small, String::from("Angelica")));
-        let m = c.can_add(Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
-        let l = c.can_add(Gobblet::new(GobbletSize::Large, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica")));
 
         assert_eq!(s, true);
         assert_eq!(m, true);
@@ -99,9 +105,9 @@ mod tests {
         c.add(Gobblet::new(GobbletSize::Large, String::from("Angelica")));
 
         // When Small, Medium, Large 
-        let s = c.can_add(Gobblet::new(GobbletSize::Small, String::from("Angelica")));
-        let m = c.can_add(Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
-        let l = c.can_add(Gobblet::new(GobbletSize::Large, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica")));
 
         assert_eq!(s, false);
         assert_eq!(m, false);
@@ -115,7 +121,7 @@ mod tests {
         c.add(Gobblet::new(GobbletSize::Small, String::from("Angelica")));
 
         // When Small, Medium, Large 
-        let s = c.can_add(Gobblet::new(GobbletSize::Small, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
 
         assert_eq!(s, false);
     }
