@@ -1,5 +1,7 @@
 use super::player::Player;
 use super::board::Board;
+use super::coord::Coord;
+use super::gobblet::Gobblet;
 
 use js_sys::Math;
 
@@ -26,13 +28,20 @@ impl Manager {
 
         Manager{ player1, player2, board, turn }
     }
-
-    pub fn get_turn(&self) -> &Turn {
-        &self.turn
+    pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
+        let p = self.get_current_player();
+        let chosen_gobblet = p.remove_piece_from_hand(section);
+        chosen_gobblet
     }
 
-    pub fn get_board(&mut self) -> &mut Board {
-        &mut self.board
+    pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
+        self.board.add_piece_to_board(coord, gobblet)
+    }
+
+    pub fn remove_piece_from_board(mut self, coord: Coord) -> Option<Gobblet> {
+        let current_player = self.get_current_player().get_name();
+        let piece = self.board.remove_piece_from_board(coord, current_player);
+        piece
     }
 
     pub fn get_current_player(&mut self) -> &mut Player {
@@ -41,6 +50,7 @@ impl Manager {
             Turn::Player2 => &mut self.player2
         }
     }
+
 
     fn random_turn() -> Turn {
         return if Math::random() > 0.5 {
