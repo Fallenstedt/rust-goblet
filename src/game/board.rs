@@ -36,6 +36,15 @@ impl Board {
         }
     }
 
+    pub fn has_won(&self) -> bool {
+        let d = &self.cells.iter();
+        // check rows,
+        // check columns,
+        // check diagonal,
+        // check antidiagonal
+        return false
+    }
+
     // Create 2 dimenson array of cells. 
     // index in first vec represents row
     // index in second vec represent column

@@ -29,7 +29,7 @@ impl Manager {
         Manager{ player1, player2, board, turn }
     }
     pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
-        let p = self.get_current_player();
+        let p = self.get_mut_current_player();
         let chosen_gobblet = p.remove_piece_from_hand(section);
         chosen_gobblet
     }
@@ -38,13 +38,26 @@ impl Manager {
         self.board.add_piece_to_board(coord, gobblet)
     }
 
-    pub fn remove_piece_from_board(mut self, coord: Coord) -> Option<Gobblet> {
-        let current_player = self.get_current_player().get_name();
+    pub fn remove_piece_from_board(&mut self, coord: Coord) -> Option<Gobblet> {
+        let current_player = self.get_mut_current_player().get_name();
         let piece = self.board.remove_piece_from_board(coord, current_player);
         piece
     }
 
-    pub fn get_current_player(&mut self) -> &mut Player {
+    pub fn has_won(&self) -> bool {
+        let current_player = self.get_current_player().get_name();
+
+        return false
+    }
+
+    pub fn get_current_player(&self) -> &Player {
+        match &self.turn {
+            Turn::Player1 => &self.player1,
+            Turn::Player2 => &self.player2
+        }
+    }
+
+    pub fn get_mut_current_player(&mut self) -> &mut Player {
         match &self.turn {
             Turn::Player1 => &mut self.player1,
             Turn::Player2 => &mut self.player2
