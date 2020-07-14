@@ -27,18 +27,6 @@ pub fn main_js() -> Result<(), JsValue> {
 #[wasm_bindgen]
 pub fn new_game() {
     let mut manager = Manager::new(String::from("Alex"), String::from("Angelica"));
-    
-    let current_player = manager.get_current_player();
-    let gobblet = current_player.remove_piece_from_hand(1).unwrap();
-    let gobblet2 = current_player.remove_piece_from_hand(1).unwrap();
-    let board = manager.get_board();
-    
-    /**
-     * problems
-     * 2. Pieces can stack in incorret order
-    */
-    board.add_piece_to_board(Coord::new(1, 1), gobblet);
-    board.add_piece_to_board(Coord::new(1, 1), gobblet2);
-
-    log!("{:?}", board)
+    let chosen_gobblet = manager.remove_piece_from_hand(1).unwrap();
+    manager.add_piece_to_board(Coord::new(0, 0), chosen_gobblet);
 }

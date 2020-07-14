@@ -8,13 +8,21 @@ pub enum GobbletSize {
 
 #[derive(Debug, Clone)]
 pub struct Gobblet {
-    pub size: GobbletSize,
+    size: GobbletSize,
     name: String
 }
 
 impl Gobblet {
     pub fn new(size: GobbletSize, name: String) -> Gobblet {
         Gobblet{ size, name }
+    }
+
+    pub fn get_size(&self) -> &GobbletSize {
+        return &self.size
+    }
+    
+    pub fn get_name(&self) -> String {
+        self.name.clone()
     }
 }
 
