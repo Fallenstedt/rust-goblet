@@ -46,7 +46,7 @@ impl Manager {
 
     pub fn has_won(&self) -> bool {
         let current_player = self.get_current_player().get_name();
-
+        let has_won = self.board.has_won(current_player);
         return false
     }
 

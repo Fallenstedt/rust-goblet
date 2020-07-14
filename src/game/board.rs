@@ -36,12 +36,27 @@ impl Board {
         }
     }
 
-    pub fn has_won(&self) -> bool {
-        let d = &self.cells.iter();
-        // check rows,
-        // check columns,
-        // check diagonal,
-        // check antidiagonal
+    pub fn has_won(&self, name: String) -> bool {
+        let mut rows: [u8; 4] = [0, 0, 0, 0];
+        let mut columns: [u8; 4] = [0, 0, 0, 0];
+        let mut diagonal: u8 = 0;
+        let mut anti_diagonal: u8 = 0;
+
+        for (r, row) in self.cells.iter().enumerate() {
+            for (c, cell) in row.iter().enumerate() {
+               
+                // check rows,
+                // check columns,
+                if cell.get_top_piece().get_name() == name {
+                    rows[r] += 1;
+                    columns[c] += 1;
+                }
+
+                // check diagonal,
+                // check antidiagonal
+            }
+        }
+
         return false
     }
 
