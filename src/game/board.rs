@@ -29,7 +29,7 @@ impl Board {
         let c = *coord.get_column() as usize;
         let cell = &mut self.cells[r][c];
 
-        return if cell.can_remove(player) {
+        return if cell.can_remove(&player) {
             Some(cell.remove())
         } else {
             None
@@ -49,16 +49,17 @@ impl Board {
                }
                 // check rows,
                 // check columns,
-                if cell.get_top_piece().get_name() == name {
+                if cell.get_top_piece().get_name() == &name {
                     rows[r] += 1;
                     columns[c] += 1;
                 }
 
                 // check diagonal,
-                if r == c && cell.get_top_piece().get_name() == name {
+                if r == c && cell.get_top_piece().get_name() == &name {
                     diagonal += 1;
                 }
-
+                
+                // check anit diagonal,
                 match (r, c) {
                     (0, 3) => anti_diagonal += 1,
                     (1, 2) => anti_diagonal += 1,
@@ -121,7 +122,7 @@ impl Cell {
         index_pending > index_top
     }
 
-    pub fn can_remove(&self, player: String) -> bool {
+    pub fn can_remove(&self, player: &String) -> bool {
         if &self.state.is_empty() == &true {
             return false;
         }
@@ -151,10 +152,10 @@ mod board_tests {
     fn add_piece_to_board_should_return_none_if_added_successfully() {
         // Given
         let mut b = Board::new();
-        b.add_piece_to_board(Coord::new(1, 3), Gobblet::new(GobbletSize::Medium, String::from("Alex")));
+        b.add_piece_to_board(Coord::new(1, 3), Gobblet::new(GobbletSize::Medium, String::from("Alex"), 1));
 
         // When
-        let r = b.add_piece_to_board(Coord::new(1, 3), Gobblet::new(GobbletSize::Large, String::from("Alex")));
+        let r = b.add_piece_to_board(Coord::new(1, 3), Gobblet::new(GobbletSize::Large, String::from("Alex"), 1));
 
         match r {
             Some(_) => assert_eq!(false, true, "Piece was reutrned!"),
@@ -172,7 +173,7 @@ mod board_tests {
     #[test]
     fn has_won_should_return_true_if_a_row_is_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"), 1);
         for i in 0..4 {
             b.add_piece_to_board(Coord::new(1, i), gobblet.clone());
         }
@@ -183,7 +184,7 @@ mod board_tests {
     #[test]
     fn has_won_should_return_true_if_a_column_is_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"), 1);
         for i in 0..4 {
             b.add_piece_to_board(Coord::new(i, 1), gobblet.clone());
         }
@@ -194,7 +195,7 @@ mod board_tests {
     #[test]
     fn has_won_should_return_true_if_diagonal_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"), 1);
         for i in 0..4 {
             b.add_piece_to_board(Coord::new(i, i), gobblet.clone());
         }
@@ -205,7 +206,7 @@ mod board_tests {
     #[test]
     fn has_won_should_return_true_if_anti_diagonal_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"), 1);
 
         b.add_piece_to_board(Coord::new(0, 3), gobblet.clone());
         b.add_piece_to_board(Coord::new(1, 2), gobblet.clone());
@@ -226,7 +227,7 @@ mod cell_tests {
     #[test]
     fn can_add_should_return_true_if_cell_is_empty() {
         let c = Cell::new();
-        let r = c.can_add(&Gobblet::new(GobbletSize::Tiny, String::from("Angelica")));
+        let r = c.can_add(&Gobblet::new(GobbletSize::Tiny, String::from("Angelica"), 1));
         assert_eq!(r, true);
     }
 
@@ -234,12 +235,12 @@ mod cell_tests {
     fn can_add_should_return_true_if_gobblet_is_larger_than_top_piece() {
         // Given Tiny Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Tiny, String::from("Angelica")));
+        c.add(Gobblet::new(GobbletSize::Tiny, String::from("Angelica"), 1));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
-        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
-        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica"), 1));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica"), 1));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica"), 1));
 
         assert_eq!(s, true);
         assert_eq!(m, true);
@@ -251,12 +252,12 @@ mod cell_tests {
     fn can_add_should_return_false_if_gobblet_is_smaller_than_top_piece() {
         // Given Large Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Large, String::from("Angelica")));
+        c.add(Gobblet::new(GobbletSize::Large, String::from("Angelica"), 1));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
-        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica")));
-        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica"), 1));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, String::from("Angelica"), 1));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, String::from("Angelica"), 1));
 
         assert_eq!(s, false);
         assert_eq!(m, false);
@@ -267,10 +268,10 @@ mod cell_tests {
     fn can_add_should_return_false_if_gobblet_is_same_size() {
         // Given Large Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Small, String::from("Angelica")));
+        c.add(Gobblet::new(GobbletSize::Small, String::from("Angelica"), 1));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica")));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, String::from("Angelica"), 1));
 
         assert_eq!(s, false);
     }

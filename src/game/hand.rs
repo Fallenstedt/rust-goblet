@@ -13,10 +13,10 @@ impl Hand {
         
         for i in 1..4 {
             let mut group = Vec::with_capacity(4);
-            group.push(Gobblet::new(GobbletSize::Tiny, name.clone()));
-            group.push(Gobblet::new(GobbletSize::Small, name.clone()));
-            group.push(Gobblet::new(GobbletSize::Medium, name.clone()));
-            group.push(Gobblet::new(GobbletSize::Large, name.clone()));
+            group.push(Gobblet::new(GobbletSize::Tiny, name.clone(), i));
+            group.push(Gobblet::new(GobbletSize::Small, name.clone(), i));
+            group.push(Gobblet::new(GobbletSize::Medium, name.clone(), i));
+            group.push(Gobblet::new(GobbletSize::Large, name.clone(), i));
 
             state.insert(i, group);
         }

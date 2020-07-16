@@ -28,6 +28,15 @@ impl Manager {
 
         Manager{ player1, player2, board, turn }
     }
+
+    // pub fn r#move(&mut self, gobblet: &Gobblet, from: Option<Coord>, to: Coord) {
+    //     match from {
+    //         Some(c) => c,
+    //         None => 
+    //     }
+
+    // }
+
     pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
         let p = self.get_mut_current_player();
         let chosen_gobblet = p.remove_piece_from_hand(section);
@@ -45,9 +54,7 @@ impl Manager {
     }
 
     pub fn has_won(&self) -> bool {
-        let current_player = self.get_current_player().get_name();
-        let has_won = self.board.has_won(current_player);
-        return false
+        self.board.has_won(self.get_current_player().get_name())
     }
 
     pub fn get_current_player(&self) -> &Player {
