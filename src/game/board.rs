@@ -36,6 +36,46 @@ impl Board {
         }
     }
 
+    pub fn has_won(&self, name: String) -> bool {
+        let mut rows: [u8; 4] = [0, 0, 0, 0];
+        let mut columns: [u8; 4] = [0, 0, 0, 0];
+        let mut diagonal: u8 = 0;
+        let mut anti_diagonal: u8 = 0;
+
+        for (r, row) in self.cells.iter().enumerate() {
+            for (c, cell) in row.iter().enumerate() {
+               if cell.is_empty() {
+                   continue;
+               }
+                // check rows,
+                // check columns,
+                if cell.get_top_piece().get_name() == name {
+                    rows[r] += 1;
+                    columns[c] += 1;
+                }
+
+                // check diagonal,
+                if r == c && cell.get_top_piece().get_name() == name {
+                    diagonal += 1;
+                }
+
+                match (r, c) {
+                    (0, 3) => anti_diagonal += 1,
+                    (1, 2) => anti_diagonal += 1,
+                    (2, 1) => anti_diagonal += 1,
+                    (3, 0) => anti_diagonal += 1,
+                    _ => continue
+                }
+            }
+        }
+
+        return if rows.contains(&4) || columns.contains(&4) || diagonal == 4 || anti_diagonal == 4 {
+            true
+        } else {
+            false
+        }
+    }
+
     // Create 2 dimenson array of cells. 
     // index in first vec represents row
     // index in second vec represent column
@@ -90,7 +130,11 @@ impl Cell {
         top_piece.get_name() == player
     }
 
-    fn get_top_piece(&self) -> &Gobblet {
+    pub fn is_empty(&self) -> bool {
+        &self.state.len() == &0
+    }
+
+    pub fn get_top_piece(&self) -> &Gobblet {
         &self.state[self.state.len() - 1]
     }
     
@@ -116,6 +160,60 @@ mod board_tests {
             Some(_) => assert_eq!(false, true, "Piece was reutrned!"),
             None => assert_eq!(true, true)
         };
+    }
+
+    #[test]
+    fn has_won_should_return_false_if_no_one_has_won() {
+        let b = Board::new();
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, false);
+    }
+
+    #[test]
+    fn has_won_should_return_true_if_a_row_is_filled() {
+        let mut b = Board::new();
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        for i in 0..4 {
+            b.add_piece_to_board(Coord::new(1, i), gobblet.clone());
+        }
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, true);
+    }
+    
+    #[test]
+    fn has_won_should_return_true_if_a_column_is_filled() {
+        let mut b = Board::new();
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        for i in 0..4 {
+            b.add_piece_to_board(Coord::new(i, 1), gobblet.clone());
+        }
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, true);
+    }
+
+    #[test]
+    fn has_won_should_return_true_if_diagonal_filled() {
+        let mut b = Board::new();
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+        for i in 0..4 {
+            b.add_piece_to_board(Coord::new(i, i), gobblet.clone());
+        }
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, true);
+    }
+
+    #[test]
+    fn has_won_should_return_true_if_anti_diagonal_filled() {
+        let mut b = Board::new();
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"));
+
+        b.add_piece_to_board(Coord::new(0, 3), gobblet.clone());
+        b.add_piece_to_board(Coord::new(1, 2), gobblet.clone());
+        b.add_piece_to_board(Coord::new(2, 1), gobblet.clone());
+        b.add_piece_to_board(Coord::new(3, 0), gobblet.clone());
+
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, true);
     }
 }
 
