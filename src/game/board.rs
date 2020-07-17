@@ -59,13 +59,9 @@ impl Board {
                     diagonal += 1;
                 }
                 
-                // check anit diagonal,
-                match (r, c) {
-                    (0, 3) => anti_diagonal += 1,
-                    (1, 2) => anti_diagonal += 1,
-                    (2, 1) => anti_diagonal += 1,
-                    (3, 0) => anti_diagonal += 1,
-                    _ => continue
+                // check anti diagonal
+                if r + c == 3 && cell.get_top_piece().get_name() == &name {
+                    anti_diagonal += 1
                 }
             }
         }
@@ -215,6 +211,20 @@ mod board_tests {
 
         let r = b.has_won(String::from("Alex"));
         assert_eq!(r, true);
+    }
+
+    #[test]
+    fn has_won_should_return_false_if_anti_diagonal_not_filled() {
+        let mut b = Board::new();
+        let gobblet = Gobblet::new(GobbletSize::Large, String::from("Alex"), 1);
+
+        b.add_piece_to_board(Coord::new(0, 3), gobblet.clone());
+        b.add_piece_to_board(Coord::new(1, 2), gobblet.clone());
+        b.add_piece_to_board(Coord::new(2, 2), gobblet.clone());
+        b.add_piece_to_board(Coord::new(3, 0), gobblet.clone());
+
+        let r = b.has_won(String::from("Alex"));
+        assert_eq!(r, false);
     }
 }
 
