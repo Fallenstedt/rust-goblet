@@ -4,11 +4,11 @@ extern crate wasm_bindgen;
 
 mod macros;
 mod utils;
+mod ui;
 mod game;
 
 use wasm_bindgen::prelude::*;
-use game::manager::Manager;
-use game::coord::Coord;
+
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -25,8 +25,11 @@ pub fn main_js() -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn new_game() {
-    let mut manager = Manager::new(String::from("Alex"), String::from("Angelica"));
-    let chosen_gobblet = manager.remove_piece_from_hand(1).unwrap();
-    manager.add_piece_to_board(Coord::new(0, 0), chosen_gobblet);
+pub fn new_game(canvas: web_sys::HtmlCanvasElement) {
+    log!("{:?}", canvas);
+    let visuals = ui::canvas::Canvas::new(canvas);
+    visuals.draw_board();
+    // let mut manager = Manager::new(String::from("Alex"), String::from("Angelica"));
+    // let chosen_gobblet = manager.remove_piece_from_hand(1).unwrap();
+    // manager.add_piece_to_board(Coord::new(0, 0), chosen_gobblet);
 }

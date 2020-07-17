@@ -9,7 +9,7 @@ export function Greet() {
     useEffect(() => {
         // Render each frame to a canvas element for Rust to see
         if (wasmEngine.instance && canvasRef.current) {
-            wasmEngine.instance.new_game()
+            wasmEngine.instance.new_game(canvasRef.current)
         }
     }, [canvasRef, wasmEngine])
 

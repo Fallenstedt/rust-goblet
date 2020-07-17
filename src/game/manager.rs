@@ -29,14 +29,6 @@ impl Manager {
         Manager{ player1, player2, board, turn }
     }
 
-    // pub fn r#move(&mut self, gobblet: &Gobblet, from: Option<Coord>, to: Coord) {
-    //     match from {
-    //         Some(c) => c,
-    //         None => 
-    //     }
-
-    // }
-
     pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
         let p = self.get_mut_current_player();
         let chosen_gobblet = p.remove_piece_from_hand(section);
