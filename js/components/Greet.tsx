@@ -1,6 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { useEngines } from '../stores/use_engines';
 
+const styles = {
+    container: {
+        display: 'flex',
+        justifyContent: 'center',
+        margin: '0 auto'
+    },
+    canvas: {
+        border: '2px solid red'
+    }
+}
 
 export function Greet() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -14,8 +24,8 @@ export function Greet() {
     }, [canvasRef, wasmEngine])
 
     return (
-        <div>
-            <canvas ref={canvasRef} width="640" height="640"></canvas>
+        <div style={styles.container}>
+            <canvas style={styles.canvas} ref={canvasRef} width="600" height="800"></canvas>
         </div>
     );
 }
