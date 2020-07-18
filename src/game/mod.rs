@@ -1,6 +1,3 @@
-mod gobblet;
-mod hand; 
-mod player;
-mod board;
-pub mod coord;
+mod ui;
+mod logic;
 pub mod manager;

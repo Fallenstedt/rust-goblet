@@ -1,9 +1,12 @@
-use super::player::Player;
-use super::board::Board;
-use super::coord::Coord;
-use super::gobblet::Gobblet;
+
+use super::logic::player::Player;
+use super::logic::board::Board;
+use super::logic::coord::Coord;
+use super::logic::gobblet::Gobblet;
+use super::ui::graphics::Graphics;
 
 use js_sys::Math;
+use web_sys::HtmlCanvasElement;
 
 #[derive(Debug)]
 pub enum Turn {
@@ -17,16 +20,22 @@ pub struct Manager {
     player2: Player,
     board: Board,
     turn: Turn,
+    graphics: Graphics,
 }
 
 impl Manager {
-    pub fn new(name1: String, name2: String) -> Manager {
+    pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
+        // logic
         let player1 = Player::new(name1);
         let player2 = Player::new(name2);
         let board = Board::new();
         let turn = Manager::random_turn(); 
 
-        Manager{ player1, player2, board, turn }
+        // graphics
+        let graphics = Graphics::new(canvas);
+        graphics.draw_board();
+
+        Manager{ player1, player2, board, turn, graphics }
     }
 
     pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
@@ -62,7 +71,6 @@ impl Manager {
             Turn::Player2 => &mut self.player2
         }
     }
-
 
     fn random_turn() -> Turn {
         return if Math::random() > 0.5 {
