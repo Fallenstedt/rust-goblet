@@ -32,6 +32,7 @@ impl Manager {
         let board = Board::new();
         let player1 = Player::new(name1);
         let player2 = Player::new(name2); 
+
         Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
     }
 

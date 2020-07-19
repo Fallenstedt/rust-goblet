@@ -1,29 +1,11 @@
 use crate::wasm_bindgen::{JsCast, JsValue};
 
-use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
-use super::super::coord::Coord;
 use std::f64;
+use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
 
-#[derive(Debug, Clone)]
-struct Rectangle {
-    path: Path2d,
-    coord: Coord,
-}
-
-impl Rectangle {
-    pub fn new(path: Path2d, coord: Coord) -> Rectangle {
-        Rectangle { path, coord }
-    }
-
-    pub fn get_path(&self) -> &Path2d {
-        &self.path
-    }
-
-    pub fn get_coord(&self) -> &Coord {
-        &self.coord
-    }
-}
-
+use super::shapes::{Rectangle, Circle};
+use crate::game::utils::coord::Coord;
+use crate::game::utils::gobblet_size::GobbletSize;
 
 #[derive(Debug, Clone)]
 pub struct Graphics {
@@ -43,11 +25,8 @@ impl Graphics {
         .unwrap();
 
         let rectangles = Graphics::draw_board(&context);
+        Graphics::draw_hand(&context);
         Graphics { element, context, rectangles }
-    }
-
-    pub fn get_element(&self) -> &HtmlCanvasElement {
-        &self.element
     }
 
     pub fn has_clicked_rectangle(&self, x: f64, y: f64) -> Option<&Coord> {
@@ -61,18 +40,20 @@ impl Graphics {
         rectangle
     }
 
-    fn draw_hand(&self) {
-        let context = &self.context;
+    fn draw_hand(context: &CanvasRenderingContext2d) {
         let yellow = JsValue::from_str("#FFB85F");
         let yellow_border = JsValue::from_str("#FFA433");
         
         context.set_fill_style(&yellow);
         context.set_stroke_style(&yellow_border);
         context.set_line_width(5.0);
-        context.begin_path();
-        context.arc(100.0, 100.0, 40.0, 0.0, 2.0 * f64::consts::PI).unwrap();
-        context.fill(); 
-        context.stroke();
+        
+        let path = Path2d::new().unwrap();
+        let size = GobbletSize::Large;
+        path.arc(100.0, 100.0, 40.0, 0.0, 2.0 * f64::consts::PI).unwrap();
+        context.fill_with_path_2d(&path); 
+
+
     }
 
     fn draw_board(context: &CanvasRenderingContext2d) -> Vec<Rectangle> {

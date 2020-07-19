@@ -1,5 +1,5 @@
-use super::hand::Hand;
-use super::gobblet::{Gobblet};
+use crate::game::logic::hand::Hand;
+use crate::game::logic::gobblet::Gobblet;
 
 #[derive(Debug)]
 pub struct Player {
@@ -27,8 +27,8 @@ impl Player {
 #[cfg(test)]
 mod tests {
     use super::Player;
-    use super::super::gobblet::GobbletSize;
-
+    use crate::game::utils::gobblet_size::GobbletSize;
+    
     fn create_player(name: String) -> Player {
         Player::new(name)
     }
