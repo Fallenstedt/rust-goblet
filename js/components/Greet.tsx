@@ -17,9 +17,14 @@ export function Greet() {
     const { wasmEngine } = useEngines()
 
     useEffect(() => {
-        // Render each frame to a canvas element for Rust to see
+        let canvas: HTMLCanvasElement;
         if (wasmEngine.instance && canvasRef.current) {
-            wasmEngine.instance.new_game(canvasRef.current)
+            canvas = canvasRef.current;
+            const manager = new wasmEngine.instance.Manager("Alex", "Angelica", canvas);
+
+            canvas.addEventListener('mousedown', ({offsetX, offsetY}) => {
+                manager.proccess_click_event(offsetX, offsetY);
+            })
         }
     }, [canvasRef, wasmEngine])
 

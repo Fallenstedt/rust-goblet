@@ -11,6 +11,19 @@ impl Board {
         Board { cells: Board::build_cells() }
     }
 
+    pub fn hasClickedCell(&self, x: f64, y: f64) -> bool {
+        let mut chose_cell = false;
+        for row in self.cells.iter() {
+            for cell in row.iter() {
+                if cell.in_range(x, y) {
+                    chose_cell = true;
+                    break;   
+                }
+            }
+        }
+        chose_cell
+    }
+
     pub fn update_cells_with_pixel_coords(&mut self, pixel_coords: Vec<((f64, f64), (f64, f64))>) {
         let mut i = 0;
         for row in self.cells.iter_mut() {
@@ -99,13 +112,28 @@ impl Board {
 
 #[derive(Debug, Clone)]
 struct Cell {
+    name: String,
     state: Vec<Gobblet>,
     pixels: Option<((f64, f64), (f64, f64))>
 }
 
 impl Cell {
     pub fn new() -> Cell {
-        Cell { state: Vec::with_capacity(4), pixels: None }
+        Cell { state: Vec::with_capacity(4), pixels: None, name: String::from("") }
+    }
+
+    pub fn in_range(&self, x: f64, y: f64) -> bool {
+        match &self.pixels {
+            Some(pixels) => {
+                let top_left: (f64, f64) = pixels.0;
+                let bottom_right: (f64, f64) = pixels.1;
+                let click_within_x = x >= top_left.0 && x <= bottom_right.0;
+                let click_within_y = y >= top_left.1 && y <= bottom_right.1;
+
+                click_within_x && click_within_y
+            },
+            None => false
+        }
     }
 
     pub fn update_pixels(&mut self, pixels: ((f64, f64),(f64, f64))) {

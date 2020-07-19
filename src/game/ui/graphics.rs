@@ -1,7 +1,6 @@
 use crate::wasm_bindgen::{JsCast, JsValue};
-use crate::wasm_bindgen::prelude::*;
 
-use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent};
+use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d};
 use std::f64;
 
 #[derive(Debug, Clone)]
@@ -20,6 +19,10 @@ impl Graphics {
         .dyn_into::<CanvasRenderingContext2d>()
         .unwrap();
         Graphics { element, context }
+    }
+
+    pub fn get_element(&self) -> &HtmlCanvasElement {
+        &self.element
     }
 
     pub fn draw_board(&self) -> Vec<((f64, f64), (f64, f64))> {
@@ -66,26 +69,4 @@ impl Graphics {
 
         pixels
     }
-
-    pub fn add_click_listener(&self) {
-        let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
-            let x = event.offset_x();
-            let y = event.offset_y();
-            // if (x >= 100 && x <= 200 && y >= 200 && y <= 300) {
-                log!("Cell 1");
-                log!("{:?}, {:?}", event.offset_x(), event.offset_y());
-            // }
-        }) as Box<dyn FnMut(_)>);
-        
-        &self.element.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref());
-        closure.forget();
-    }
-
-    
 }
-
-// var rect = canvas.getBoundingClientRect();
-// return {
-//   x: evt.clientX - rect.left,
-//   y: evt.clientY - rect.top
-// };

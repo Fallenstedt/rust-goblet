@@ -1,12 +1,11 @@
-
 use super::logic::player::Player;
 use super::logic::board::Board;
-use super::logic::coord::Coord;
-use super::logic::gobblet::Gobblet;
 use super::ui::graphics::Graphics;
 
 use js_sys::Math;
-use web_sys::HtmlCanvasElement;
+use wasm_bindgen::prelude::*;
+use web_sys::{HtmlCanvasElement};
+
 
 #[derive(Debug)]
 pub enum Turn {
@@ -14,6 +13,7 @@ pub enum Turn {
     Player2
 }
 
+#[wasm_bindgen]
 #[derive(Debug)]
 pub struct Manager {
     player1: Player,
@@ -23,55 +23,64 @@ pub struct Manager {
     graphics: Graphics,
 }
 
+#[wasm_bindgen]
 impl Manager {
+
+    #[wasm_bindgen(constructor)]
     pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
         let player1 = Player::new(name1);
-        let player2 = Player::new(name2);
-        let turn = Manager::random_turn(); 
+        let player2 = Player::new(name2); 
+        
         
         let graphics = Graphics::new(canvas);
-        
         let mut board = Board::new();
         board.update_cells_with_pixel_coords(graphics.draw_board());
         
-        graphics.add_click_listener();
-
-        Manager{ player1, player2, board, turn, graphics }
+        Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
     }
 
-    pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
-        let p = self.get_mut_current_player();
-        let chosen_gobblet = p.remove_piece_from_hand(section);
-        chosen_gobblet
-    }
 
-    pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
-        self.board.add_piece_to_board(coord, gobblet)
-    }
-
-    pub fn remove_piece_from_board(&mut self, coord: Coord) -> Option<Gobblet> {
-        let current_player = self.get_mut_current_player().get_name();
-        let piece = self.board.remove_piece_from_board(coord, current_player);
-        piece
-    }
-
-    pub fn has_won(&self) -> bool {
-        self.board.has_won(self.get_current_player().get_name())
-    }
-
-    pub fn get_current_player(&self) -> &Player {
-        match &self.turn {
-            Turn::Player1 => &self.player1,
-            Turn::Player2 => &self.player2
+    #[wasm_bindgen(method)]
+    pub fn proccess_click_event(&self, x: f64, y: f64) {
+        log!("Clicked at {:?}, {:?}",x,y);
+        if &self.board.hasClickedCell(x, y) == &true {
+            log!("Found cell");
         }
     }
 
-    pub fn get_mut_current_player(&mut self) -> &mut Player {
-        match &self.turn {
-            Turn::Player1 => &mut self.player1,
-            Turn::Player2 => &mut self.player2
-        }
-    }
+    // pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
+    //     let p = self.get_mut_current_player();
+    //     let chosen_gobblet = p.remove_piece_from_hand(section);
+    //     chosen_gobblet
+    // }
+
+    // pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
+    //     self.board.add_piece_to_board(coord, gobblet)
+    // }
+
+    // pub fn remove_piece_from_board(&mut self, coord: Coord) -> Option<Gobblet> {
+    //     let current_player = self.get_mut_current_player().get_name();
+    //     let piece = self.board.remove_piece_from_board(coord, current_player);
+    //     piece
+    // }
+    
+    // pub fn has_won(&self) -> bool {
+    //     self.board.has_won(self.get_current_player().get_name())
+    // }
+
+    // pub fn get_current_player(&self) -> &Player {
+    //     match &self.turn {
+    //         Turn::Player1 => &self.player1,
+    //         Turn::Player2 => &self.player2
+    //     }
+    // }
+
+    // pub fn get_mut_current_player(&mut self) -> &mut Player {
+    //     match &self.turn {
+    //         Turn::Player1 => &mut self.player1,
+    //         Turn::Player2 => &mut self.player2
+    //     }
+    // }
 
     fn random_turn() -> Turn {
         return if Math::random() > 0.5 {
