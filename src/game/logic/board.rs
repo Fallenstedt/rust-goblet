@@ -1,5 +1,5 @@
 use super::gobblet::{Gobblet, GobbletSize};
-use super::coord::Coord;
+use super::super::coord::Coord;
 
 #[derive(Debug)]
 pub struct Board {
@@ -11,33 +11,10 @@ impl Board {
         Board { cells: Board::build_cells() }
     }
 
-    pub fn has_clicked_cell(&self, x: f64, y: f64) -> Option<Coord> {
-        let mut chosen_cell: Option<Coord> = None;
-        for (r, row) in self.cells.iter().enumerate() {
-            for (c, cell) in row.iter().enumerate() {
-                if cell.in_range(x, y) {
-                    chosen_cell = Some(Coord::new(r as u8, c as u8));
-                    break;   
-                }
-            }
-        }
-        chosen_cell
-    }
-
     pub fn get_cell(&self, coord: &Coord) -> &Cell {
         let r = *coord.get_row() as usize;
         let c = *coord.get_column() as usize;
         &self.cells[r][c]
-    }
-
-    pub fn update_cells_with_pixel_coords(&mut self, pixel_coords: Vec<((f64, f64), (f64, f64))>) {
-        let mut i = 0;
-        for row in self.cells.iter_mut() {
-            for cell in row.iter_mut() {
-                cell.update_pixels(*pixel_coords.get(i).unwrap());
-                i += 1;
-            }
-        }
     }
 
     pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
@@ -119,30 +96,11 @@ impl Board {
 #[derive(Debug, Clone)]
 pub struct Cell {
     state: Vec<Gobblet>,
-    pixels: Option<((f64, f64), (f64, f64))>
 }
 
 impl Cell {
     pub fn new() -> Cell {
-        Cell { state: Vec::with_capacity(4), pixels: None }
-    }
-
-    pub fn in_range(&self, x: f64, y: f64) -> bool {
-        match &self.pixels {
-            Some(pixels) => {
-                let top_left: (f64, f64) = pixels.0;
-                let bottom_right: (f64, f64) = pixels.1;
-                let click_within_x = x >= top_left.0 && x <= bottom_right.0;
-                let click_within_y = y >= top_left.1 && y <= bottom_right.1;
-
-                click_within_x && click_within_y
-            },
-            None => false
-        }
-    }
-
-    pub fn update_pixels(&mut self, pixels: ((f64, f64),(f64, f64))) {
-        self.pixels = Some(pixels);
+        Cell { state: Vec::with_capacity(4) }
     }
 
     pub fn add(&mut self, gobblet: Gobblet) {

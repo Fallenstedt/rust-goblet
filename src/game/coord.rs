@@ -1,4 +1,5 @@
 
+
 #[derive(Debug, Clone)]
 pub struct Coord(u8, u8);
 

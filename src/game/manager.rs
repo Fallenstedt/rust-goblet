@@ -28,14 +28,10 @@ impl Manager {
 
     #[wasm_bindgen(constructor)]
     pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
+        let graphics = Graphics::new(canvas);
+        let board = Board::new();
         let player1 = Player::new(name1);
         let player2 = Player::new(name2); 
-         
-        let graphics = Graphics::new(canvas);
-        let mut board = Board::new();
-        board.update_cells_with_pixel_coords(graphics.draw_board());
-        graphics.draw_hand();
-        
         Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
     }
 
@@ -43,14 +39,14 @@ impl Manager {
     #[wasm_bindgen(method)]
     pub fn proccess_click_event(&self, x: f64, y: f64) {
         log!("Clicked at {:?}, {:?}",x,y);
-        
-        match &self.board.has_clicked_cell(x, y) {
-            Some(c) => {
-                let cell = &self.board.get_cell(c);
+
+        match self.graphics.has_clicked_rectangle(x, y) {
+            Some(coord) => {
+                let cell = &self.board.get_cell(coord);
                 log!("{:#?}", cell);
             },
-            None => log!("Nothing clicked")
-        };
+            None => log!("Board was not clicked")
+        }
     }
 
     // pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
