@@ -39,6 +39,7 @@ features = [
   'ImageData',
   'MediaStream',
   'MessageEvent',
+  'Path2d',
   'Performance',
   'RtcDataChannel',
   'RtcDataChannelEvent',
