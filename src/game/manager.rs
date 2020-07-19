@@ -25,15 +25,16 @@ pub struct Manager {
 
 impl Manager {
     pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
-        // logic
         let player1 = Player::new(name1);
         let player2 = Player::new(name2);
-        let board = Board::new();
         let turn = Manager::random_turn(); 
-
-        // graphics
+        
         let graphics = Graphics::new(canvas);
-        graphics.draw_board();
+        
+        let mut board = Board::new();
+        board.update_cells_with_pixel_coords(graphics.draw_board());
+        
+        graphics.add_click_listener();
 
         Manager{ player1, player2, board, turn, graphics }
     }

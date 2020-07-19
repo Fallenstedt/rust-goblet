@@ -11,6 +11,16 @@ impl Board {
         Board { cells: Board::build_cells() }
     }
 
+    pub fn update_cells_with_pixel_coords(&mut self, pixel_coords: Vec<((f64, f64), (f64, f64))>) {
+        let mut i = 0;
+        for row in self.cells.iter_mut() {
+            for cell in row.iter_mut() {
+                cell.update_pixels(*pixel_coords.get(i).unwrap());
+                i += 1;
+            }
+        }
+    }
+
     pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
         let r = *coord.get_row() as usize;
         let c = *coord.get_column() as usize;
@@ -90,11 +100,16 @@ impl Board {
 #[derive(Debug, Clone)]
 struct Cell {
     state: Vec<Gobblet>,
+    pixels: Option<((f64, f64), (f64, f64))>
 }
 
 impl Cell {
     pub fn new() -> Cell {
-        Cell { state: Vec::with_capacity(4)}
+        Cell { state: Vec::with_capacity(4), pixels: None }
+    }
+
+    pub fn update_pixels(&mut self, pixels: ((f64, f64),(f64, f64))) {
+        self.pixels = Some(pixels);
     }
 
     pub fn add(&mut self, gobblet: Gobblet) {
