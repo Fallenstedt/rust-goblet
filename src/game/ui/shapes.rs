@@ -1,6 +1,5 @@
 use web_sys::Path2d;
 use crate::game::utils::coord::Coord;
-use crate::game::utils::gobblet_size::GobbletSize;
 #[derive(Debug, Clone)]
 pub struct Rectangle {
     path: Path2d,
@@ -24,19 +23,19 @@ impl Rectangle {
 #[derive(Debug, Clone)]
 pub struct Circle {
     path: Path2d,
-    size: GobbletSize,
+    quadrant: u8,
 }
 
 impl Circle {
-    pub fn new(path: Path2d, size: GobbletSize) -> Circle {
-        Circle { path, size }
+    pub fn new(path: Path2d, quadrant: u8) -> Circle {
+        Circle { path, quadrant }
     }
 
     pub fn get_path(&self) -> &Path2d {
         &self.path
     }
 
-    pub fn get_size(&self) -> &GobbletSize {
-        &self.size
+    pub fn get_quadrant(&self) -> u8 {
+        self.quadrant
     }
 }

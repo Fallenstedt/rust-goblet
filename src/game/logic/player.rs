@@ -27,7 +27,8 @@ impl Player {
 #[cfg(test)]
 mod tests {
     use super::Player;
-    use crate::game::utils::gobblet_size::GobbletSize;
+    use crate::game::logic::gobblet::GobbletSize;
+
     
     fn create_player(name: String) -> Player {
         Player::new(name)

@@ -6,9 +6,6 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         margin: '0 auto'
-    },
-    canvas: {
-        border: '2px solid red'
     }
 }
 
@@ -30,7 +27,7 @@ export function Greet() {
 
     return (
         <div style={styles.container}>
-            <canvas style={styles.canvas} ref={canvasRef} width="600" height="800"></canvas>
+            <canvas ref={canvasRef} width="600" height="800"></canvas>
         </div>
     );
 }

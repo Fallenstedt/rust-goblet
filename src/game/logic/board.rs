@@ -1,6 +1,5 @@
-use crate::game::utils::gobblet_size::GobbletSize;
 use crate::game::utils::coord::Coord;
-use crate::game::logic::gobblet::Gobblet;
+use crate::game::logic::gobblet::{Gobblet, GobbletSize};
 
 
 #[derive(Debug)]
@@ -150,8 +149,7 @@ impl Cell {
 mod board_tests {
     use super::Board;
     use super::Coord;
-    use crate::game::logic::gobblet::Gobblet;
-    use crate::game::utils::gobblet_size::GobbletSize;
+    use crate::game::logic::gobblet::{Gobblet, GobbletSize};
     
     #[test]
     fn add_piece_to_board_should_return_none_if_added_successfully() {
@@ -241,9 +239,7 @@ mod board_tests {
 #[cfg(test)]
 mod cell_tests {
     use super::Cell;
-    use super::Gobblet;
-
-    use crate::game::utils::gobblet_size::GobbletSize;
+    use super::{Gobblet, GobbletSize};
 
     #[test]
     fn can_add_should_return_true_if_cell_is_empty() {

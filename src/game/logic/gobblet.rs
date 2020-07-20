@@ -1,4 +1,11 @@
-use crate::game::utils::gobblet_size::GobbletSize;
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GobbletSize {
+    Tiny,
+    Small,
+    Medium,
+    Large
+}
+
 
 #[derive(Debug, Clone)]
 pub struct Gobblet {

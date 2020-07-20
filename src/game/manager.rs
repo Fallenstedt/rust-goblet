@@ -41,13 +41,23 @@ impl Manager {
     pub fn proccess_click_event(&self, x: f64, y: f64) {
         log!("Clicked at {:?}, {:?}",x,y);
 
-        match self.graphics.has_clicked_rectangle(x, y) {
+        match self.graphics.get_clicked_rectangle(x, y) {
             Some(coord) => {
-                let cell = &self.board.get_cell(coord);
-                log!("{:#?}", cell);
+                let c =  self.board.get_cell(coord);
+                log!("{:#?}", c);
             },
             None => log!("Board was not clicked")
-        }
+        };
+
+        match self.graphics.get_clicked_circle(x, y) {
+            Some(c) => {
+                log!("{:#?}", c);
+            },
+            None => log!("Circle was not clicked")
+        };
+
+        // if click on circle no rectangle
+        // then get current player and quadrant
     }
 
     // pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
