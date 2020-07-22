@@ -28,7 +28,7 @@ impl Manager {
 
     #[wasm_bindgen(constructor)]
     pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
-        let graphics = Graphics::new(canvas);
+        let graphics = Graphics::new(canvas, &name1, &name2);
         let board = Board::new();
         let player1 = Player::new(name1);
         let player2 = Player::new(name2); 
@@ -40,21 +40,25 @@ impl Manager {
     #[wasm_bindgen(method)]
     pub fn proccess_click_event(&self, x: f64, y: f64) {
         log!("Clicked at {:?}, {:?}",x,y);
-
-        match self.graphics.get_clicked_rectangle(x, y) {
-            Some(coord) => {
-                let c =  self.board.get_cell(coord);
-                log!("{:#?}", c);
-            },
-            None => log!("Board was not clicked")
+        
+        let has_clicked_circle = match self.graphics.get_clicked_circle(x, y) {
+            Some(_) => true,
+            None => false,
         };
 
-        match self.graphics.get_clicked_circle(x, y) {
-            Some(c) => {
-                log!("{:#?}", c);
-            },
-            None => log!("Circle was not clicked")
+        let has_clicked_rectangle = match self.graphics.get_clicked_rectangle(x, y) {
+            Some(_) => true,
+            None => false,
         };
+        
+
+        match (has_clicked_rectangle, has_clicked_circle) {
+            (true, true) => log!("Circle and Rectangle clicked, piece is on board"),
+            (true, false) => log!("Rectangle clicked, nothing found"),
+            (false, true) => log!("Circle clicked, piece is on hand"),
+            (false, false) => log!("What are you doing"),
+        };
+  
 
         // if click on circle no rectangle
         // then get current player and quadrant

@@ -18,7 +18,7 @@ pub struct Graphics {
 
 impl Graphics {
 
-    pub fn new(element: HtmlCanvasElement) -> Graphics {
+    pub fn new(element: HtmlCanvasElement, name1:&String, name2: &String) -> Graphics {
         let context = element
         .get_context("2d")
         .unwrap()
@@ -31,7 +31,7 @@ impl Graphics {
         context.fill_rect(0.0, 0.0, element.width() as f64, element.height() as f64);
 
         let rectangles = Graphics::draw_board(&context);
-        let circles = Graphics::draw_hand(&context);
+        let circles = Graphics::draw_hand(&context, name1, name2);
         Graphics { element, context, rectangles, circles }
     }
 
@@ -57,14 +57,8 @@ impl Graphics {
         circle
     }
 
-    fn draw_hand(context: &CanvasRenderingContext2d) -> Vec<Circle> {
-        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, player: usize) -> Circle {
-            // let y = 100.0 * player  as f64;
-            let y = match player {
-                1 => 100.0,
-                2 => 700.0,
-                _ => 0.0,
-            };
+    fn draw_hand(context: &CanvasRenderingContext2d, name1: &String, name2: &String) -> Vec<Circle> {
+        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, owner: &String, y: f64) -> Circle {
             let coord = match quadrant {
                 1 => (200.0, y),
                 2 => (300.0, y),
@@ -75,37 +69,44 @@ impl Graphics {
             
             let path = Path2d::new().unwrap();
             path.arc(coord.0, coord.1, size, 0.0, 2.0 * f64::consts::PI).unwrap();
-            
-            let yellow = JsValue::from_str("#FFB85F");
-            let yellow_border = JsValue::from_str("#FFA433");
-            let red = JsValue::from_str("#F67280");
-            let red_border = JsValue::from_str("#C4421A");
-            
-            if player == 1 {
-                context.set_fill_style(&yellow);
-                context.set_stroke_style(&yellow_border);
-            } else {
-                context.set_fill_style(&red);
-                context.set_stroke_style(&red_border);
-            }
 
             context.set_line_width(5.0);
             context.stroke_with_path(&path);
             context.fill_with_path_2d(&path);         
-            
-
-            
-            let circle = Circle::new(path, quadrant as u8);
+                        
+            let circle = Circle::new(path, quadrant as u8, owner.clone());
             circle
         }
 
-        let mut circles: Vec<Circle> = Vec::with_capacity(12);
+        let mut circles: Vec<Circle> = Vec::with_capacity(12);  
+        let yellow = JsValue::from_str("#FFB85F");
+        let yellow_border = JsValue::from_str("#FFA433");
+        let red = JsValue::from_str("#F67280");
+        let red_border = JsValue::from_str("#C4421A");
         
-        let w = 400.0;
         for size in 1..5 {
             for player in 1..3 {
+
+                let mut owner = if player == 1 { name1 } else { name2 };
+                let mut y: f64 = 0.0;
+                match player {
+                    1 => {
+                        context.set_fill_style(&yellow);
+                        context.set_stroke_style(&yellow_border);
+                        owner = name1;
+                        y = 100.0;
+                    },
+                    2 => {
+                        context.set_fill_style(&red);
+                        context.set_stroke_style(&red_border);
+                        owner = name2;
+                        y = 700.0;
+                    },
+                    _ => {}
+                };
+
                 for quadrant in 1..4 {
-                        let circle = piece_renderer(context, quadrant, size, player);
+                        let circle = piece_renderer(context, quadrant, size, owner, y);
                         circles.push(circle);
                 }
             }

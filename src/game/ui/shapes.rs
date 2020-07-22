@@ -24,11 +24,12 @@ impl Rectangle {
 pub struct Circle {
     path: Path2d,
     quadrant: u8,
+    owner: String
 }
 
 impl Circle {
-    pub fn new(path: Path2d, quadrant: u8) -> Circle {
-        Circle { path, quadrant }
+    pub fn new(path: Path2d, quadrant: u8, owner: String) -> Circle {
+        Circle { path, quadrant, owner: owner }
     }
 
     pub fn get_path(&self) -> &Path2d {
@@ -37,5 +38,9 @@ impl Circle {
 
     pub fn get_quadrant(&self) -> u8 {
         self.quadrant
+    }
+
+    pub fn get_owner(&self) -> &String {
+        &self.owner
     }
 }
