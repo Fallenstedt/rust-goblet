@@ -57,6 +57,10 @@ impl Graphics {
         circle
     }
 
+    pub fn get_context(&self) -> &CanvasRenderingContext2d {
+        &self.context
+    }
+
     fn draw_hand(context: &CanvasRenderingContext2d, name1: &String, name2: &String) -> Vec<Circle> {
         fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, owner: &String, y: f64) -> Circle {
             let coord = match quadrant {

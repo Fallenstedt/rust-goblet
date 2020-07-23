@@ -1,10 +1,15 @@
+use crate::wasm_bindgen::JsCast;
+use crate::wasm_bindgen::prelude::*;
+
 use super::logic::player::Player;
 use super::logic::board::Board;
 use super::ui::graphics::Graphics;
+use super::ui::shapes::{Circle, Rectangle};
 
+use std::rc::Rc;
+use std::cell::Cell;      
 use js_sys::Math;
-use wasm_bindgen::prelude::*;
-use web_sys::{HtmlCanvasElement};
+use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d};
 
 
 #[derive(Debug)]
@@ -36,67 +41,72 @@ impl Manager {
         Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
     }
 
-
     #[wasm_bindgen(method)]
-    pub fn proccess_click_event(&self, x: f64, y: f64) {
-        log!("Clicked at {:?}, {:?}",x,y);
-        
-        let has_clicked_circle = match self.graphics.get_clicked_circle(x, y) {
-            Some(_) => true,
-            None => false,
-        };
+    pub fn start_game(&self, canvas: HtmlCanvasElement) {
+        let context = canvas
+        .get_context("2d")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<CanvasRenderingContext2d>()
+        .unwrap();
 
-        let has_clicked_rectangle = match self.graphics.get_clicked_rectangle(x, y) {
-            Some(_) => true,
-            None => false,
-        };
-        
+        let context = Rc::new(context);
+        let pressed = Rc::new(Cell::new(false));
+        let circle = Rc::new(Cell::new(false));
+        let rectangle: Rc<Cell<Option<Rectangle>>> = Rc::new(Cell::new(None));
+        let graphics = self.graphics.clone();
 
-        match (has_clicked_rectangle, has_clicked_circle) {
-            (true, true) => log!("Circle and Rectangle clicked, piece is on board"),
-            (true, false) => log!("Rectangle clicked, nothing found"),
-            (false, true) => log!("Circle clicked, piece is on hand"),
-            (false, false) => log!("What are you doing"),
-        };
-  
+        // process mousedown
+        {
+            let context = context.clone();
+            let pressed = pressed.clone();
+            let circle = circle.clone();
+            let rectangle = rectangle.clone();
+            
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                let x = event.offset_x() as f64;
+                let y = event.offset_y() as f64;
+                
+                pressed.set(true);
+                circle.set(graphics.get_clicked_circle(x, y).is_some());
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
+        // process mouse move
+        {
+            let context = context.clone();
+            let pressed = pressed.clone();
+            let circle = circle.clone();
+            let graphics = self.graphics.clone();
 
-        // if click on circle no rectangle
-        // then get current player and quadrant
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                if pressed.get() && circle.get() {
+                    let x = event.offset_x() as f64;
+                    let y = event.offset_y() as f64;
+                    log!("{:?} {:?}",x, y);
+                    let c = graphics.get_clicked_circle(x, y).unwrap();
+                    log!("{:?}!", c);
+                    // c.get_path().move_to(x, y);
+                }
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
+
+        //process mouse up
+        {
+            let context = context.clone();
+            let pressed = pressed.clone();
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                let x = event.offset_x() as f64;
+                let y = event.offset_y() as f64;
+                pressed.set(false);
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
     }
-
-    // pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
-    //     let p = self.get_mut_current_player();
-    //     let chosen_gobblet = p.remove_piece_from_hand(section);
-    //     chosen_gobblet
-    // }
-
-    // pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
-    //     self.board.add_piece_to_board(coord, gobblet)
-    // }
-
-    // pub fn remove_piece_from_board(&mut self, coord: Coord) -> Option<Gobblet> {
-    //     let current_player = self.get_mut_current_player().get_name();
-    //     let piece = self.board.remove_piece_from_board(coord, current_player);
-    //     piece
-    // }
-    
-    // pub fn has_won(&self) -> bool {
-    //     self.board.has_won(self.get_current_player().get_name())
-    // }
-
-    // pub fn get_current_player(&self) -> &Player {
-    //     match &self.turn {
-    //         Turn::Player1 => &self.player1,
-    //         Turn::Player2 => &self.player2
-    //     }
-    // }
-
-    // pub fn get_mut_current_player(&mut self) -> &mut Player {
-    //     match &self.turn {
-    //         Turn::Player1 => &mut self.player1,
-    //         Turn::Player2 => &mut self.player2
-    //     }
-    // }
 
     fn random_turn() -> Turn {
         return if Math::random() > 0.5 {

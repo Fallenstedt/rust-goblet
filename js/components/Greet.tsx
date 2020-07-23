@@ -18,10 +18,7 @@ export function Greet() {
         if (wasmEngine.instance && canvasRef.current) {
             canvas = canvasRef.current;
             const manager = new wasmEngine.instance.Manager("Alex", "Angelica", canvas);
-
-            canvas.addEventListener('mousedown', ({offsetX, offsetY}) => {
-                manager.proccess_click_event(offsetX, offsetY);
-            })
+            manager.start_game(canvas);
         }
     }, [canvasRef, wasmEngine])
 
