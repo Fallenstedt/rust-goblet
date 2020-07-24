@@ -47,16 +47,23 @@ impl Graphics {
         circle.set_pos(x, y);
     }
 
-    pub fn get_clicked_circle_index(&self, x: f64, y: f64) -> isize {
+    pub fn get_largest_clicked_circle_index(&self, x: f64, y: f64) -> isize {
         let mut index: isize = -1;
+        let mut clicked_circles = Vec::new();
+        
         for (i, c) in self.circles.iter().enumerate() {
             if self.context.is_point_in_path_with_path_2d_and_f64(c.get_path(), x, y) {
-                log!("{:#?}", c);
-                log!("{:#?}", i);
+                clicked_circles.push((i, c));
                 index = i as isize;
-                break;
             } 
         }
+
+        if clicked_circles.len() == 0 {
+            return index;
+        }
+        // sort circles by largest -> smallest
+        clicked_circles.sort_by(|a, b| b.1.get_size().partial_cmp(&a.1.get_size()).unwrap());
+        index = clicked_circles.get(0).unwrap().0 as isize;
         index
     }
 

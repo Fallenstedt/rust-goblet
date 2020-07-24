@@ -25,34 +25,31 @@ pub struct Manager {
     player2: Player,
     board: Board,
     turn: Turn,
-    graphics: Graphics,
 }
 
 #[wasm_bindgen]
 impl Manager {
 
     #[wasm_bindgen(constructor)]
-    pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
-        let graphics = Graphics::new(canvas);
+    pub fn new(name1: String, name2: String) -> Manager {
         let board = Board::new();
         let player1 = Player::new(name1);
         let player2 = Player::new(name2); 
 
-        Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
+        Manager{ player1, player2, board, turn:  Manager::random_turn() }
     }
 
     #[wasm_bindgen(method)]
     pub fn start_game(&self, canvas: HtmlCanvasElement) {
+        let graphics = Rc::new(RefCell::new(Graphics::new(canvas.clone())));
         let pressed = Rc::new(Cell::new(false));
         let circle = Rc::new(Cell::new(-1));
         let rectangle: Rc<Cell<Option<Rectangle>>> = Rc::new(Cell::new(None));
-        let graphics = &self.graphics.clone();
 
         // process mousedown
         {
             let pressed = pressed.clone();
             let circle = circle.clone();
-            let rectangle = rectangle.clone();
             let graphics = graphics.clone();
             
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
@@ -60,7 +57,7 @@ impl Manager {
                 let y = event.offset_y() as f64;
 
                 pressed.set(true);
-                circle.set(graphics.get_clicked_circle_index(x, y));
+                circle.set(graphics.borrow().get_largest_clicked_circle_index(x, y));
 
             }) as Box<dyn FnMut(_)>);
             canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
@@ -71,16 +68,15 @@ impl Manager {
         {
             let pressed = pressed.clone();
             let circle = circle.clone();
-            let mut graphics = self.graphics.clone();
+            let graphics = graphics.clone();
 
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 if pressed.get() && circle.get() > -1 {
-                    log!("drag circle");
                     let x = event.offset_x() as f64;
                     let y = event.offset_y() as f64;
                     
-                    graphics.update_circle_coords(circle.get() as usize, x, y);
-                    graphics.draw_circles();
+                    graphics.borrow_mut().update_circle_coords(circle.get() as usize, x, y);
+                    graphics.borrow_mut().draw_circles();
                 
                 }
             }) as Box<dyn FnMut(_)>);
@@ -91,13 +87,17 @@ impl Manager {
         //process mouse up
         {
             let pressed = pressed.clone();
-            let graphics = self.graphics.clone();
 
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-                log!("mouseup");
-                let x = event.offset_x() as f64;
-                let y = event.offset_y() as f64;
-                // log!("{:#?}", graphics);
+                if circle.get() > -1 {
+                    let x = event.offset_x() as f64;
+                    let y = event.offset_y() as f64;
+                    
+                    // get square hovering over
+                    // check if cell can be dropped
+                    // if yes, drop and update game state
+                    // if no, reset everyone's state
+                }
 
                 pressed.set(false);
                 circle.set(-1);
