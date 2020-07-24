@@ -30,18 +30,11 @@ pub struct Manager {
 #[wasm_bindgen]
 impl Manager {
 
-    #[wasm_bindgen(constructor)]
-    pub fn new(name1: String, name2: String) -> Manager {
-        let board = Board::new();
-        let player1 = Player::new(name1);
-        let player2 = Player::new(name2); 
-
-        Manager{ player1, player2, board, turn:  Manager::random_turn() }
-    }
-
     #[wasm_bindgen(method)]
-    pub fn start_game(&self, canvas: HtmlCanvasElement) {
+    pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
         let graphics = Rc::new(RefCell::new(Graphics::new(canvas.clone())));
+        let manager = Rc::new(RefCell::new(Manager::new(name1, name2)));
+
         let pressed = Rc::new(Cell::new(false));
         let circle = Rc::new(Cell::new(-1));
         let rectangle: Rc<Cell<Option<Rectangle>>> = Rc::new(Cell::new(None));
@@ -92,7 +85,6 @@ impl Manager {
                 if circle.get() > -1 {
                     let x = event.offset_x() as f64;
                     let y = event.offset_y() as f64;
-                    
                     // get square hovering over
                     // check if cell can be dropped
                     // if yes, drop and update game state
@@ -106,6 +98,14 @@ impl Manager {
             closure.forget();
         }
         
+    }
+
+    fn new(name1: String, name2: String) -> Manager {
+        let board = Board::new();
+        let player1 = Player::new(name1);
+        let player2 = Player::new(name2); 
+
+        Manager{ player1, player2, board, turn:  Manager::random_turn() }
     }
 
     fn random_turn() -> Turn {
