@@ -1,10 +1,15 @@
+use crate::wasm_bindgen::JsCast;
+use crate::wasm_bindgen::prelude::*;
+
 use super::logic::player::Player;
 use super::logic::board::Board;
 use super::ui::graphics::Graphics;
+use super::ui::shapes::{Circle, Rectangle};
 
+use std::rc::Rc;
+use std::cell::{Cell, RefCell};      
 use js_sys::Math;
-use wasm_bindgen::prelude::*;
-use web_sys::{HtmlCanvasElement};
+use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d};
 
 
 #[derive(Debug)]
@@ -20,83 +25,88 @@ pub struct Manager {
     player2: Player,
     board: Board,
     turn: Turn,
-    graphics: Graphics,
 }
 
 #[wasm_bindgen]
 impl Manager {
 
     #[wasm_bindgen(constructor)]
-    pub fn new(name1: String, name2: String, canvas: HtmlCanvasElement) -> Manager {
-        let graphics = Graphics::new(canvas, &name1, &name2);
+    pub fn new(name1: String, name2: String) -> Manager {
         let board = Board::new();
         let player1 = Player::new(name1);
         let player2 = Player::new(name2); 
 
-        Manager{ player1, player2, board, turn:  Manager::random_turn(), graphics }
+        Manager{ player1, player2, board, turn:  Manager::random_turn() }
     }
-
 
     #[wasm_bindgen(method)]
-    pub fn proccess_click_event(&self, x: f64, y: f64) {
-        log!("Clicked at {:?}, {:?}",x,y);
+    pub fn start_game(&self, canvas: HtmlCanvasElement) {
+        let graphics = Rc::new(RefCell::new(Graphics::new(canvas.clone())));
+        let pressed = Rc::new(Cell::new(false));
+        let circle = Rc::new(Cell::new(-1));
+        let rectangle: Rc<Cell<Option<Rectangle>>> = Rc::new(Cell::new(None));
+
+        // process mousedown
+        {
+            let pressed = pressed.clone();
+            let circle = circle.clone();
+            let graphics = graphics.clone();
+            
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                let x = event.offset_x() as f64;
+                let y = event.offset_y() as f64;
+
+                pressed.set(true);
+                circle.set(graphics.borrow().get_largest_clicked_circle_index(x, y));
+
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
+
+        // process mouse move
+        {
+            let pressed = pressed.clone();
+            let circle = circle.clone();
+            let graphics = graphics.clone();
+
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                if pressed.get() && circle.get() > -1 {
+                    let x = event.offset_x() as f64;
+                    let y = event.offset_y() as f64;
+                    
+                    graphics.borrow_mut().update_circle_coords(circle.get() as usize, x, y);
+                    graphics.borrow_mut().draw_circles();
+                
+                }
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
+
+        //process mouse up
+        {
+            let pressed = pressed.clone();
+
+            let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                if circle.get() > -1 {
+                    let x = event.offset_x() as f64;
+                    let y = event.offset_y() as f64;
+                    
+                    // get square hovering over
+                    // check if cell can be dropped
+                    // if yes, drop and update game state
+                    // if no, reset everyone's state
+                }
+
+                pressed.set(false);
+                circle.set(-1);
+            }) as Box<dyn FnMut(_)>);
+            canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
+            closure.forget();
+        }
         
-        let has_clicked_circle = match self.graphics.get_clicked_circle(x, y) {
-            Some(_) => true,
-            None => false,
-        };
-
-        let has_clicked_rectangle = match self.graphics.get_clicked_rectangle(x, y) {
-            Some(_) => true,
-            None => false,
-        };
-        
-
-        match (has_clicked_rectangle, has_clicked_circle) {
-            (true, true) => log!("Circle and Rectangle clicked, piece is on board"),
-            (true, false) => log!("Rectangle clicked, nothing found"),
-            (false, true) => log!("Circle clicked, piece is on hand"),
-            (false, false) => log!("What are you doing"),
-        };
-  
-
-        // if click on circle no rectangle
-        // then get current player and quadrant
     }
-
-    // pub fn remove_piece_from_hand(&mut self, section: u8) -> Option<Gobblet> {
-    //     let p = self.get_mut_current_player();
-    //     let chosen_gobblet = p.remove_piece_from_hand(section);
-    //     chosen_gobblet
-    // }
-
-    // pub fn add_piece_to_board(&mut self, coord: Coord, gobblet: Gobblet) -> Option<Gobblet> {
-    //     self.board.add_piece_to_board(coord, gobblet)
-    // }
-
-    // pub fn remove_piece_from_board(&mut self, coord: Coord) -> Option<Gobblet> {
-    //     let current_player = self.get_mut_current_player().get_name();
-    //     let piece = self.board.remove_piece_from_board(coord, current_player);
-    //     piece
-    // }
-    
-    // pub fn has_won(&self) -> bool {
-    //     self.board.has_won(self.get_current_player().get_name())
-    // }
-
-    // pub fn get_current_player(&self) -> &Player {
-    //     match &self.turn {
-    //         Turn::Player1 => &self.player1,
-    //         Turn::Player2 => &self.player2
-    //     }
-    // }
-
-    // pub fn get_mut_current_player(&mut self) -> &mut Player {
-    //     match &self.turn {
-    //         Turn::Player1 => &mut self.player1,
-    //         Turn::Player2 => &mut self.player2
-    //     }
-    // }
 
     fn random_turn() -> Turn {
         return if Math::random() > 0.5 {
