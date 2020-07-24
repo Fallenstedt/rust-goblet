@@ -18,20 +18,16 @@ pub struct Graphics {
 
 impl Graphics {
 
-    pub fn new(element: HtmlCanvasElement, name1:&String, name2: &String) -> Graphics {
+    pub fn new(element: HtmlCanvasElement) -> Graphics {
         let context = element
         .get_context("2d")
         .unwrap()
         .unwrap()
         .dyn_into::<CanvasRenderingContext2d>()
         .unwrap();
-        
-        let tan: JsValue = JsValue::from_str("#6C5B7B");
-        context.set_fill_style(&tan);
-        context.fill_rect(0.0, 0.0, element.width() as f64, element.height() as f64);
 
-        let rectangles = Graphics::draw_board(&context);
-        let circles = Graphics::draw_hand(&context, name1, name2);
+        let rectangles = Graphics::create_board(&context, &element);
+        let circles = Graphics::create_hand(&context);
         Graphics { element, context, rectangles, circles }
     }
 
@@ -46,23 +42,108 @@ impl Graphics {
         rectangle
     }
 
-    pub fn get_clicked_circle(&self, x: f64, y: f64) -> Option<&Circle> {
-        let mut circle = None;
-        for c in self.circles.iter() {
+    pub fn update_circle_coords(&mut self, index: usize,  x: f64, y: f64) {
+        let circle = self.circles.get_mut(index).unwrap();  
+        circle.set_pos(x, y);
+    }
+
+    pub fn get_clicked_circle_index(&self, x: f64, y: f64) -> isize {
+        let mut index: isize = -1;
+        for (i, c) in self.circles.iter().enumerate() {
             if self.context.is_point_in_path_with_path_2d_and_f64(c.get_path(), x, y) {
-                circle = Some(c);
+                log!("{:#?}", c);
+                log!("{:#?}", i);
+                index = i as isize;
                 break;
             } 
         }
-        circle
+        index
     }
 
     pub fn get_context(&self) -> &CanvasRenderingContext2d {
         &self.context
     }
 
-    fn draw_hand(context: &CanvasRenderingContext2d, name1: &String, name2: &String) -> Vec<Circle> {
-        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, owner: &String, y: f64) -> Circle {
+    pub fn draw_circles(&mut self) -> Vec<Circle>  {
+        self.redraw_board();
+
+        let yellow = JsValue::from_str("#FFB85F");
+        let yellow_border = JsValue::from_str("#FFA433");
+        let red = JsValue::from_str("#F67280");
+        let red_border = JsValue::from_str("#C4421A");
+
+        for circle in &mut self.circles {
+            let path = Path2d::new().unwrap();
+            let (x, y) = circle.get_pos();
+            let size = circle.get_size();
+
+            match circle.get_player() {
+                1 => {
+                    &self.context.set_fill_style(&yellow);
+                    &self.context.set_stroke_style(&yellow_border);
+                },
+                2 => {
+                    &self.context.set_fill_style(&red);
+                    &self.context.set_stroke_style(&red_border);
+                },
+                _ => {}
+            };
+
+            path.arc(x, y, size, 0.0, 2.0 * f64::consts::PI).unwrap();
+
+            self.context.set_line_width(5.0);
+            self.context.stroke_with_path(&path);
+            self.context.fill_with_path_2d(&path);
+            
+            circle.set_path(path);
+        }
+
+        self.circles.clone()
+    }
+
+    pub fn redraw_board(&self) {
+        let light_purple: JsValue = JsValue::from_str("#6C5B7B");
+        self.context.set_fill_style(&light_purple);
+        self.context.fill_rect(0.0, 0.0, self.element.width() as f64, self.element.height() as f64);
+
+        // board
+        let w = 400.0;
+        let h = 400.0;
+        let n_row = 4.0;
+        let n_col = 4.0;
+        
+        let w: f64 = w / n_row; // width of block
+        let h: f64 = h / n_col; // height of block
+        
+        // colors
+        let sea = JsValue::from_str("#5f506c");
+        let foam = JsValue::from_str("#867297");
+        
+        let offset = (100.0, 200.0);
+        for i in 0..n_row as u8 { // row
+            for j in 0..(n_col as u8) { // column
+                // cast as floats
+                let j = j as f64;
+                let i = i as f64;
+                
+                if i % 2.0 == 0.0 {
+                    if j % 2.0 == 0.0 { self.context.set_fill_style(&foam); } else { self.context.set_fill_style(&sea); };    
+                } else {
+                    if j % 2.0 == 0.0 { self.context.set_fill_style(&sea); } else { self.context.set_fill_style(&foam); };
+                }
+
+                let x = j * w + offset.0;
+                let y = i * h + offset.1;
+                
+                let path = Path2d::new().unwrap();
+                path.rect(x, y, w, h);
+                self.context.fill_with_path_2d(&path);
+            }
+        }
+    }
+
+    fn create_hand(context: &CanvasRenderingContext2d) -> Vec<Circle> {
+        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, player: u8, y: f64) -> Circle {
             let coord = match quadrant {
                 1 => (200.0, y),
                 2 => (300.0, y),
@@ -78,7 +159,7 @@ impl Graphics {
             context.stroke_with_path(&path);
             context.fill_with_path_2d(&path);         
                         
-            let circle = Circle::new(path, quadrant as u8, owner.clone());
+            let circle = Circle::new(path, quadrant as u8, player, coord.0, coord.1, size);
             circle
         }
 
@@ -91,26 +172,23 @@ impl Graphics {
         for size in 1..5 {
             for player in 1..3 {
 
-                let mut owner = if player == 1 { name1 } else { name2 };
                 let mut y: f64 = 0.0;
                 match player {
                     1 => {
                         context.set_fill_style(&yellow);
                         context.set_stroke_style(&yellow_border);
-                        owner = name1;
                         y = 100.0;
                     },
                     2 => {
                         context.set_fill_style(&red);
                         context.set_stroke_style(&red_border);
-                        owner = name2;
                         y = 700.0;
                     },
                     _ => {}
                 };
 
                 for quadrant in 1..4 {
-                        let circle = piece_renderer(context, quadrant, size, owner, y);
+                        let circle = piece_renderer(context, quadrant, size, player, y);
                         circles.push(circle);
                 }
             }
@@ -118,7 +196,11 @@ impl Graphics {
         circles
     }
 
-    fn draw_board(context: &CanvasRenderingContext2d) -> Vec<Rectangle> {
+    fn create_board(context: &CanvasRenderingContext2d, element: &HtmlCanvasElement) -> Vec<Rectangle> {
+        let light_purple: JsValue = JsValue::from_str("#6C5B7B");
+        context.set_fill_style(&light_purple);
+        context.fill_rect(0.0, 0.0, element.width() as f64, element.height() as f64);
+
         // board
         let w = 400.0;
         let h = 400.0;
@@ -158,7 +240,6 @@ impl Graphics {
                 rectangles.push(rectangle);
             }
         }
-        context.close_path();
         rectangles
     }
 }
