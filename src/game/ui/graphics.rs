@@ -31,20 +31,32 @@ impl Graphics {
         Graphics { element, context, rectangles, circles }
     }
 
-    pub fn get_clicked_rectangle(&self, x: f64, y: f64) -> Option<&Coord> {
-        let mut rectangle = None;
-        for r in self.rectangles.iter() {
+    pub fn get_clicked_rectangle_index(&self, x: f64, y: f64) -> isize {
+        let mut index: isize = -1;
+        for (i, r) in self.rectangles.iter().enumerate() {
             if self.context.is_point_in_path_with_path_2d_and_f64(r.get_path(), x, y) {
-                rectangle = Some(r.get_coord());
+                index = i as isize;
                 break;
             } 
         }
-        rectangle
+        index
     }
 
-    pub fn update_circle_coords(&mut self, index: usize,  x: f64, y: f64) {
+    pub fn get_coord_for_rectangle(&self, index: usize) -> &Coord {
+        self.rectangles.get(index).unwrap().get_coord()
+    }
+
+    pub fn update_circle_pos(&mut self, index: usize,  x: f64, y: f64) {
         let circle = self.circles.get_mut(index).unwrap();  
         circle.set_pos(x, y);
+    }
+        
+    pub fn get_circle_quadrant(&self, index: usize) -> u8  {
+        self.circles.get(index).unwrap().get_quadrant()
+    }
+
+    pub fn get_circle(&self, index: usize) -> &Circle  {
+        self.circles.get(index).unwrap()
     }
 
     pub fn get_largest_clicked_circle_index(&self, x: f64, y: f64) -> isize {
@@ -61,17 +73,23 @@ impl Graphics {
         if clicked_circles.len() == 0 {
             return index;
         }
+        
         // sort circles by largest -> smallest
         clicked_circles.sort_by(|a, b| b.1.get_size().partial_cmp(&a.1.get_size()).unwrap());
         index = clicked_circles.get(0).unwrap().0 as isize;
         index
     }
 
-    pub fn get_context(&self) -> &CanvasRenderingContext2d {
-        &self.context
+    pub fn position_circle_center_of_rectangle(&mut self, rectange_index: usize, circle_index: usize) {
+        let rectangle = self.rectangles.get(rectange_index).unwrap();
+        let circle = self.circles.get_mut(circle_index).unwrap();
+        let (x, y) = rectangle.get_pos();
+        circle.set_pos(x, y);
+        self.draw_circles();
     }
 
-    pub fn draw_circles(&mut self) -> Vec<Circle>  {
+
+    pub fn draw_circles(&mut self) {
         self.redraw_board();
 
         let yellow = JsValue::from_str("#FFB85F");
@@ -104,11 +122,9 @@ impl Graphics {
             
             circle.set_path(path);
         }
-
-        self.circles.clone()
     }
 
-    pub fn redraw_board(&self) {
+    fn redraw_board(&self) {
         let light_purple: JsValue = JsValue::from_str("#6C5B7B");
         self.context.set_fill_style(&light_purple);
         self.context.fill_rect(0.0, 0.0, self.element.width() as f64, self.element.height() as f64);
@@ -243,7 +259,7 @@ impl Graphics {
                 path.rect(x, y, w, h);
                 context.fill_with_path_2d(&path);
                 
-                let rectangle = Rectangle::new(path, coord);
+                let rectangle = Rectangle::new(path, coord, x + (0.5 * w), y + (0.5 * h));
                 rectangles.push(rectangle);
             }
         }

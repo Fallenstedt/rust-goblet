@@ -17,7 +17,7 @@ export function Greet() {
         let canvas: HTMLCanvasElement;
         if (wasmEngine.instance && canvasRef.current) {
             canvas = canvasRef.current;
-            wasmEngine.instance.Manager.start_game(canvas, "Alex", "Angelica");
+            wasmEngine.instance.start_game(canvas, "Alex", "Angelica");
         }
     }, [canvasRef, wasmEngine])
 

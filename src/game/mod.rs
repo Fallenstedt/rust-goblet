@@ -1,4 +1,4 @@
 mod utils;
-mod ui;
 mod logic;
+pub mod ui;
 pub mod manager;

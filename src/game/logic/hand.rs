@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::game::logic::gobblet::{Gobblet, GobbletSize};
+use crate::game::manager::PlayerNumber;
 
 #[derive(Debug)]
 pub struct Hand {
@@ -7,15 +8,15 @@ pub struct Hand {
 }
 
 impl Hand {
-    pub fn new(name: String) -> Hand {
+    pub fn new(number: PlayerNumber) -> Hand {
         let mut state = HashMap::new();
         
         for i in 1..4 {
             let mut group = Vec::with_capacity(4);
-            group.push(Gobblet::new(GobbletSize::Tiny, name.clone(), i));
-            group.push(Gobblet::new(GobbletSize::Small, name.clone(), i));
-            group.push(Gobblet::new(GobbletSize::Medium, name.clone(), i));
-            group.push(Gobblet::new(GobbletSize::Large, name.clone(), i));
+            group.push(Gobblet::new(GobbletSize::Tiny, number, i));
+            group.push(Gobblet::new(GobbletSize::Small, number, i));
+            group.push(Gobblet::new(GobbletSize::Medium, number, i));
+            group.push(Gobblet::new(GobbletSize::Large, number, i));
 
             state.insert(i, group);
         }

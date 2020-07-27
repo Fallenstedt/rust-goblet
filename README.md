@@ -9,3 +9,6 @@ A simple 'yarn' and 'yarn start' should do the trick. File an issue if it doesn'
 
 `src` is where your rust code can go. `js` is where you can find your react :) 
 
+TODO
+
+Make the pieces different shades of yellow and red

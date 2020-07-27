@@ -1,24 +1,26 @@
 use crate::game::logic::hand::Hand;
 use crate::game::logic::gobblet::Gobblet;
+use crate::game::manager::PlayerNumber;
 
 #[derive(Debug)]
 pub struct Player {
     name: String,
     hand: Hand,
+    number: PlayerNumber
 }
 
 impl Player {
-    pub fn new(name: String) -> Player {
-        let hand = Hand::new(name.clone());
-        Player{ name, hand }
+    pub fn new(name: String, number: PlayerNumber) -> Player {
+        let hand = Hand::new(number);
+        Player{ name, hand, number }
     }
 
     pub fn remove_piece_from_hand(&mut self, hand_section: u8) -> Option<Gobblet> {
         self.hand.remove_piece(hand_section)
     }
 
-    pub fn get_name(&self) -> String {
-        self.name.clone()
+    pub fn get_player_number(&self) -> &PlayerNumber {
+        &self.number
     }
 }
 
@@ -28,15 +30,15 @@ impl Player {
 mod tests {
     use super::Player;
     use crate::game::logic::gobblet::GobbletSize;
-
+    use crate::game::manager::PlayerNumber;
     
-    fn create_player(name: String) -> Player {
-        Player::new(name)
+    fn create_player(name: String, number: PlayerNumber) -> Player {
+        Player::new(name, number)
     }
 
     #[test]
     fn remove_piece_from_hand_should_remove_four_pieces_in_order() {
-        let mut p = create_player(String::from("Alex"));
+        let mut p = create_player(String::from("Alex"), PlayerNumber::One);
         let mut count = 0u32;
         
         loop {
@@ -64,10 +66,10 @@ mod tests {
     }
 
     #[test]
-    fn get_name_should_return_name() {
-        let p = create_player(String::from("Alex"));
+    fn get_player_number_should_return_name() {
+        let p = create_player(String::from("Alex"), PlayerNumber::Two);
         let expected = String::from("Alex");
-        assert_eq!(p.get_name(), expected);
+        assert_eq!(p.get_player_number(), expected);
     }
 
 }
