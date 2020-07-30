@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::game::logic::gobblet::{Gobblet, GobbletSize};
-use crate::game::manager::PlayerNumber;
+use crate::game::utils::PlayerNumber;
 
 #[derive(Debug)]
 pub struct Hand {

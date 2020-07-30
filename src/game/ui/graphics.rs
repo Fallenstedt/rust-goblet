@@ -5,7 +5,7 @@ use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
 
 use super::shapes::{Rectangle, Circle};
 use crate::game::utils::coord::Coord;
-use crate::game::manager::PlayerNumber;
+use crate::game::utils::PlayerNumber;
 
 
 
@@ -196,8 +196,8 @@ impl Graphics {
         for size in 1..5 {
             for player in 1..3 {
 
-                let mut y: f64 = 0.0;
-                let mut p: PlayerNumber = PlayerNumber::One;
+                let y: f64;
+                let p: PlayerNumber;
                 match player {
                     1 => {
                         context.set_fill_style(&yellow);

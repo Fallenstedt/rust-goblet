@@ -1,16 +1,12 @@
 use crate::wasm_bindgen::prelude::*;
 use crate::game::utils::coord::Coord;
+use crate::game::utils::{PlayerNumber, player_number_match};
 use super::logic::player::Player;
 use super::logic::gobblet::{Gobblet};
 use super::logic::board::{Board};
 
 use js_sys::Math;
 
-#[derive(Debug, Clone, Copy)]
-pub enum PlayerNumber {
-    One,
-    Two
-}
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -63,7 +59,7 @@ impl Manager {
     }
 
     fn get_mut_player(&mut self) -> &mut Player {
-        if matches!(self.turn, PlayerNumber::One) {
+        if player_number_match(self.turn, PlayerNumber::One) {
             &mut self.player1
         } else {
             &mut self.player2

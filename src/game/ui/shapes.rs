@@ -1,6 +1,6 @@
 use web_sys::Path2d;
 use crate::game::utils::coord::Coord;
-use crate::game::manager::PlayerNumber;
+use crate::game::utils::PlayerNumber;
 
 #[derive(Debug, Clone)]
 pub struct Rectangle {

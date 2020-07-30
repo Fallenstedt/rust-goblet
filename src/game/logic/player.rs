@@ -1,6 +1,6 @@
 use crate::game::logic::hand::Hand;
 use crate::game::logic::gobblet::Gobblet;
-use crate::game::manager::PlayerNumber;
+use crate::game::utils::PlayerNumber;
 
 #[derive(Debug)]
 pub struct Player {
@@ -30,7 +30,7 @@ impl Player {
 mod tests {
     use super::Player;
     use crate::game::logic::gobblet::GobbletSize;
-    use crate::game::manager::PlayerNumber;
+    use crate::game::utils::PlayerNumber;
     
     fn create_player(name: String, number: PlayerNumber) -> Player {
         Player::new(name, number)

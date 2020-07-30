@@ -1,6 +1,6 @@
 use crate::game::utils::coord::Coord;
+use crate::game::utils::{PlayerNumber, player_number_match};
 use crate::game::logic::gobblet::{Gobblet, GobbletSize};
-use crate::game::manager::PlayerNumber;
 
 #[derive(Debug)]
 pub struct Board {
@@ -25,7 +25,6 @@ impl Board {
 
         return if cell.can_add(&gobblet) {
             cell.add(gobblet);
-            log!("Cell updated {:#?}", cell);
             None
         } else {
             Some(gobblet)
@@ -57,18 +56,18 @@ impl Board {
                }
                 // check rows,
                 // check columns,
-                if matches!(cell.get_top_piece().get_player_number(), &number) {
+                if player_number_match(cell.get_top_piece().get_player_number(), number) {
                     rows[r] += 1;
                     columns[c] += 1;
                 }
 
                 // check diagonal,
-                if r == c && matches!(cell.get_top_piece().get_player_number(), &number)  {
+                if r == c && player_number_match(cell.get_top_piece().get_player_number(), number)  {
                     diagonal += 1;
                 }
                 
                 // check anti diagonal
-                if r + c == 3 && matches!(cell.get_top_piece().get_player_number(), &number) {
+                if r + c == 3 && player_number_match(cell.get_top_piece().get_player_number(), number) {
                     anti_diagonal += 1
                 }
             }
@@ -131,7 +130,7 @@ impl Cell {
         }
 
         let top_piece = &self.get_top_piece();
-        matches!(top_piece.get_player_number(), player)
+        player_number_match(top_piece.get_player_number(), *player)
     }
 
     fn is_empty(&self) -> bool {
