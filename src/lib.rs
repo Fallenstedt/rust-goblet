@@ -14,6 +14,7 @@ use crate::wasm_bindgen::prelude::*;
 use crate::wasm_bindgen::JsCast;
 use crate::game::manager::Manager;
 use crate::game::ui::graphics::Graphics;
+use crate::game::utils::{PlayerNumber, player_number_match};
 
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -61,7 +62,7 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
                 let current_turn = manager.get_turn();
                 let shape_owner = shape.get_player();
 
-                if matches!(shape_owner, current_turn) {
+                if player_number_match(*shape_owner, *current_turn) {
                     pressed.set(true);
                     initial_rectangle.set(graphics.get_clicked_rectangle_index(x, y));
                 } else {
