@@ -1,5 +1,7 @@
 use web_sys::Path2d;
 use crate::game::utils::coord::Coord;
+use crate::game::manager::PlayerNumber;
+
 #[derive(Debug, Clone)]
 pub struct Rectangle {
     path: Path2d,
@@ -30,14 +32,14 @@ impl Rectangle {
 pub struct Circle {
     path: Path2d,
     quadrant: u8,
-    player: u8,
+    player: PlayerNumber,
     x: f64, 
     y: f64,
     size: f64
 }
 
 impl Circle {
-    pub fn new(path: Path2d, quadrant: u8, player: u8, x: f64, y: f64, size: f64) -> Circle {
+    pub fn new(path: Path2d, quadrant: u8, player: PlayerNumber, x: f64, y: f64, size: f64) -> Circle {
         Circle { path, quadrant, player, x, y, size }
     }
 
@@ -53,8 +55,8 @@ impl Circle {
         self.quadrant
     }
 
-    pub fn get_player(&self) -> u8 {
-        self.player
+    pub fn get_player(&self) -> &PlayerNumber {
+        &self.player
     }
 
     pub fn get_pos(&self) -> (f64, f64) {

@@ -43,6 +43,7 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
     // process mousedown
     {
         let graphics = graphics.clone();
+        let manager = manager.clone();
         let pressed = pressed.clone();
         let circle = circle.clone();
         let initial_rectangle= initial_rectangle.clone();
@@ -50,10 +51,25 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
         let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             let x = event.offset_x() as f64;
             let y = event.offset_y() as f64;
+            let graphics = graphics.borrow();
+            let manager = manager.borrow();
 
-            pressed.set(true);
-            initial_rectangle.set(graphics.borrow().get_clicked_rectangle_index(x, y));
-            circle.set(graphics.borrow().get_largest_clicked_circle_index(x, y));
+            circle.set(graphics.get_largest_clicked_circle_index(x, y));
+            
+            if circle.get() > -1 {
+                let shape = graphics.get_circle(circle.get() as usize);
+                let current_turn = manager.get_turn();
+                let shape_owner = shape.get_player();
+
+                if matches!(shape_owner, current_turn) {
+                    pressed.set(true);
+                    initial_rectangle.set(graphics.get_clicked_rectangle_index(x, y));
+                } else {
+                    pressed.set(false);
+                    circle.set(-1);
+                    initial_rectangle.set(-1);
+                }                
+            }
 
         }) as Box<dyn FnMut(_)>);
         canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
@@ -67,7 +83,7 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
         let graphics = graphics.clone();
 
         let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            if pressed.get() && circle.get() > -1 {
+            if pressed.get() == true && circle.get() > -1 {
                 let x = event.offset_x() as f64;
                 let y = event.offset_y() as f64;
                 
@@ -107,18 +123,18 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
             }
 
             // piece came from hand
+            let ending_rectangle = ending_rectangle as usize;
             if initial_rectangle.get() < 0 {
                 log!("User is getting circle from hand");
                 
-                let ending_rectangle = ending_rectangle as usize;
                 let coord = graphics.get_coord_for_rectangle(ending_rectangle);
                 let quadrant = graphics.get_circle_quadrant(circle.get() as usize);               
-                
+
                 manager.move_gobblet_from_hand_to_coord(coord, quadrant).unwrap();
                 graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize);
             } else {
             // piece came from board
- 
+                
             };
 
             pressed.set(false);

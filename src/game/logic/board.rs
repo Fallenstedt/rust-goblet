@@ -57,18 +57,18 @@ impl Board {
                }
                 // check rows,
                 // check columns,
-                if cell.get_top_piece().get_player_number() == &number {
+                if matches!(cell.get_top_piece().get_player_number(), &number) {
                     rows[r] += 1;
                     columns[c] += 1;
                 }
 
                 // check diagonal,
-                if r == c && cell.get_top_piece().get_player_number() == &number {
+                if r == c && matches!(cell.get_top_piece().get_player_number(), &number)  {
                     diagonal += 1;
                 }
                 
                 // check anti diagonal
-                if r + c == 3 && cell.get_top_piece().get_player_number() == &number {
+                if r + c == 3 && matches!(cell.get_top_piece().get_player_number(), &number) {
                     anti_diagonal += 1
                 }
             }
@@ -131,10 +131,10 @@ impl Cell {
         }
 
         let top_piece = &self.get_top_piece();
-        top_piece.get_player_number() == player
+        matches!(top_piece.get_player_number(), player)
     }
 
-    pub fn is_empty(&self) -> bool {
+    fn is_empty(&self) -> bool {
         &self.state.len() == &0
     }
 

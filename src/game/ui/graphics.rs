@@ -5,6 +5,7 @@ use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
 
 use super::shapes::{Rectangle, Circle};
 use crate::game::utils::coord::Coord;
+use crate::game::manager::PlayerNumber;
 
 
 
@@ -103,11 +104,11 @@ impl Graphics {
             let size = circle.get_size();
 
             match circle.get_player() {
-                1 => {
+                PlayerNumber::One => {
                     &self.context.set_fill_style(&yellow);
                     &self.context.set_stroke_style(&yellow_border);
                 },
-                2 => {
+                PlayerNumber::Two => {
                     &self.context.set_fill_style(&red);
                     &self.context.set_stroke_style(&red_border);
                 },
@@ -166,7 +167,7 @@ impl Graphics {
     }
 
     fn create_hand(context: &CanvasRenderingContext2d) -> Vec<Circle> {
-        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, player: u8, y: f64) -> Circle {
+        fn piece_renderer(context: &CanvasRenderingContext2d, quadrant: usize, size: usize, player: PlayerNumber, y: f64) -> Circle {
             let coord = match quadrant {
                 1 => (200.0, y),
                 2 => (300.0, y),
@@ -196,22 +197,25 @@ impl Graphics {
             for player in 1..3 {
 
                 let mut y: f64 = 0.0;
+                let mut p: PlayerNumber = PlayerNumber::One;
                 match player {
                     1 => {
                         context.set_fill_style(&yellow);
                         context.set_stroke_style(&yellow_border);
                         y = 100.0;
+                        p = PlayerNumber::One;
                     },
                     2 => {
                         context.set_fill_style(&red);
                         context.set_stroke_style(&red_border);
                         y = 700.0;
+                        p = PlayerNumber::Two;
                     },
-                    _ => {}
+                    _ => panic!("Cannot have more than two players!")
                 };
 
                 for quadrant in 1..4 {
-                        let circle = piece_renderer(context, quadrant, size, player, y);
+                        let circle = piece_renderer(context, quadrant, size, p, y);
                         circles.push(circle);
                 }
             }

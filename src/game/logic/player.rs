@@ -64,12 +64,4 @@ mod tests {
             continue;
         }
     }
-
-    #[test]
-    fn get_player_number_should_return_name() {
-        let p = create_player(String::from("Alex"), PlayerNumber::Two);
-        let expected = String::from("Alex");
-        assert_eq!(p.get_player_number(), expected);
-    }
-
 }
