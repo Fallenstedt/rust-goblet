@@ -7,6 +7,6 @@ pub enum PlayerNumber {
     Two
 }
 
-pub fn player_number_match(shape_owner: PlayerNumber, current_turn: PlayerNumber) -> bool {
-    return std::mem::discriminant(&shape_owner) == std::mem::discriminant(&current_turn)
+pub fn player_number_match(shape_owner: &PlayerNumber, current_turn: &PlayerNumber) -> bool {
+    return std::mem::discriminant(shape_owner) == std::mem::discriminant(current_turn)
 }

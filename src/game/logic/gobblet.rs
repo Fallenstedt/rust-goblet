@@ -25,8 +25,8 @@ impl Gobblet {
         return &self.size
     }
     
-    pub fn get_player_number(&self) -> PlayerNumber {
-        self.player_number
+    pub fn get_player_number(&self) -> &PlayerNumber {
+        &self.player_number
     }
 
     pub fn get_quardrant(&self) -> &u8 {

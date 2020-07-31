@@ -26,7 +26,7 @@ impl Manager {
         Manager{ player1, player2, board, turn:  Manager::random_turn() }
     }
 
-    pub fn move_gobblet_from_hand_to_coord(&mut self, coord: &Coord, quadrant: u8) -> Result<(), Gobblet> {
+    pub fn move_gobblet_from_hand_to_coord(&mut self, coord: &Coord, quadrant: u8) -> Result<(), &str> {
         let player = self.get_mut_player();
 
         let gobblet = match player.remove_piece_from_hand(quadrant) {
@@ -38,19 +38,40 @@ impl Manager {
         };
 
         match self.board.add_piece_to_board(coord, gobblet) {
-            None => {
-                self.change_turn();
-                Ok(())
-            },
-            Some(gobblet) => Err(gobblet)
+            None => Ok(()),
+            Some(gobblet) => Err("Unable to add piece to board, returning piece to hand")
         }
+    }
+
+    pub fn move_gobblet_on_board(&mut self, source: &Coord, destination: &Coord) -> Result<(), &str> {
+        let gobblet = match self.board.remove_piece_from_board(source, &self.turn) {
+            Some(g) => g,
+            None => panic!("Expected piece to exist on board")
+        };
+
+        match self.board.add_piece_to_board(destination, gobblet) {
+            None => Ok(()),
+            Some(g) => {
+                self.board.add_piece_to_board(source, g).unwrap();
+                Err("Unable to move piece to board, returning piece to board")
+            }
+        }
+    }
+
+    pub fn has_won(&self) -> Option<PlayerNumber> {
+        if self.board.has_won(PlayerNumber::One) {
+            return Some(PlayerNumber::One)
+        } else if self.board.has_won(PlayerNumber::Two) {
+            return Some(PlayerNumber::Two)
+        }
+        return None
     }
 
     pub fn get_turn(&self) -> &PlayerNumber {
         &self.turn
     }
 
-    fn change_turn(&mut self) {
+    pub fn change_turn(&mut self) {
         self.turn = match self.turn {
             PlayerNumber::One => PlayerNumber::Two,
             PlayerNumber::Two => PlayerNumber::One,
@@ -58,8 +79,16 @@ impl Manager {
         log!("Next turn. {:?}", self.turn);
     }
 
+    fn get_player(&self) -> &Player {
+        if player_number_match(&self.turn, &PlayerNumber::One) {
+            &self.player1
+        } else {
+            &self.player2
+        }
+    }
+
     fn get_mut_player(&mut self) -> &mut Player {
-        if player_number_match(self.turn, PlayerNumber::One) {
+        if player_number_match(&self.turn, &PlayerNumber::One) {
             &mut self.player1
         } else {
             &mut self.player2
@@ -74,3 +103,4 @@ impl Manager {
         }
     }
 }
+

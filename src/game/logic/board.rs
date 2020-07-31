@@ -25,13 +25,14 @@ impl Board {
 
         return if cell.can_add(&gobblet) {
             cell.add(gobblet);
+            log!("cell {:#?}", cell);
             None
         } else {
             Some(gobblet)
         }
     }
 
-    pub fn remove_piece_from_board(&mut self, coord: Coord, player: PlayerNumber) -> Option<Gobblet> {
+    pub fn remove_piece_from_board(&mut self, coord: &Coord, player: &PlayerNumber) -> Option<Gobblet> {
         let r = *coord.get_row() as usize;
         let c = *coord.get_column() as usize;
         let cell = &mut self.cells[r][c];
@@ -48,7 +49,7 @@ impl Board {
         let mut columns: [u8; 4] = [0, 0, 0, 0];
         let mut diagonal: u8 = 0;
         let mut anti_diagonal: u8 = 0;
-
+        log!("{:?}", self.cells);
         for (r, row) in self.cells.iter().enumerate() {
             for (c, cell) in row.iter().enumerate() {
                if cell.is_empty() {
@@ -56,22 +57,24 @@ impl Board {
                }
                 // check rows,
                 // check columns,
-                if player_number_match(cell.get_top_piece().get_player_number(), number) {
+                if player_number_match(cell.get_top_piece().get_player_number(), &number) {
                     rows[r] += 1;
                     columns[c] += 1;
                 }
 
                 // check diagonal,
-                if r == c && player_number_match(cell.get_top_piece().get_player_number(), number)  {
+                if r == c && player_number_match(cell.get_top_piece().get_player_number(), &number)  {
                     diagonal += 1;
                 }
                 
                 // check anti diagonal
-                if r + c == 3 && player_number_match(cell.get_top_piece().get_player_number(), number) {
+                if r + c == 3 && player_number_match(cell.get_top_piece().get_player_number(), &number) {
                     anti_diagonal += 1
                 }
             }
         }
+        log!("rows {:?}", rows);
+        log!("columns {:?}", columns);
 
         return if rows.contains(&4) || columns.contains(&4) || diagonal == 4 || anti_diagonal == 4 {
             true
@@ -130,7 +133,7 @@ impl Cell {
         }
 
         let top_piece = &self.get_top_piece();
-        player_number_match(top_piece.get_player_number(), *player)
+        player_number_match(top_piece.get_player_number(), player)
     }
 
     fn is_empty(&self) -> bool {
@@ -166,7 +169,7 @@ mod board_tests {
     #[test]
     fn has_won_should_return_false_if_no_one_has_won() {
         let b = Board::new();
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, false);
     }
 
@@ -177,7 +180,7 @@ mod board_tests {
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(1, i), gobblet.clone());
         }
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, true);
     }
     
@@ -188,7 +191,7 @@ mod board_tests {
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(i, 1), gobblet.clone());
         }
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, true);
     }
 
@@ -199,7 +202,7 @@ mod board_tests {
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(i, i), gobblet.clone());
         }
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, true);
     }
 
@@ -213,7 +216,7 @@ mod board_tests {
         b.add_piece_to_board(&Coord::new(2, 1), gobblet.clone());
         b.add_piece_to_board(&Coord::new(3, 0), gobblet.clone());
 
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, true);
     }
 
@@ -227,7 +230,7 @@ mod board_tests {
         b.add_piece_to_board(&Coord::new(2, 2), gobblet.clone());
         b.add_piece_to_board(&Coord::new(3, 0), gobblet.clone());
 
-        let r = b.has_won(PlayerNumber::One);
+        let r = b.has_won(&PlayerNumber::One);
         assert_eq!(r, false);
     }
 }
