@@ -13,12 +13,12 @@ pub enum GobbletSize {
 pub struct Gobblet {
     size: GobbletSize,
     player_number: PlayerNumber,
-    quadrant: u8
+    // quadrant: u8
 }
 
 impl Gobblet {
-    pub fn new(size: GobbletSize, player_number: PlayerNumber, quadrant: u8) -> Gobblet {
-        Gobblet{ size, player_number, quadrant }
+    pub fn new(size: GobbletSize, player_number: PlayerNumber) -> Gobblet {
+        Gobblet{ size, player_number }
     }
 
     pub fn get_size(&self) -> &GobbletSize {
@@ -27,10 +27,6 @@ impl Gobblet {
     
     pub fn get_player_number(&self) -> &PlayerNumber {
         &self.player_number
-    }
-
-    pub fn get_quardrant(&self) -> &u8 {
-        &self.quadrant
     }
 }
 
@@ -42,7 +38,7 @@ mod tests {
 
     #[test]
     fn new_should_create_gobblet_with_size() {
-        let p = Gobblet::new(GobbletSize::Tiny, PlayerNumber::One, 1);
+        let p = Gobblet::new(GobbletSize::Tiny, PlayerNumber::One);
 
         match p.size {
             GobbletSize::Tiny => assert_eq!(true, true),

@@ -12,12 +12,6 @@ impl Board {
         Board { cells: Board::build_cells() }
     }
 
-    pub fn get_cell(&self, coord: &Coord) -> &Cell {
-        let r = *coord.get_row() as usize;
-        let c = *coord.get_column() as usize;
-        &self.cells[r][c]
-    }
-
     pub fn add_piece_to_board(&mut self, coord: &Coord, gobblet: Gobblet) -> Option<Gobblet> {
         let r = *coord.get_row() as usize;
         let c = *coord.get_column() as usize;
@@ -25,7 +19,6 @@ impl Board {
 
         return if cell.can_add(&gobblet) {
             cell.add(gobblet);
-            log!("cell {:#?}", cell);
             None
         } else {
             Some(gobblet)
@@ -49,7 +42,6 @@ impl Board {
         let mut columns: [u8; 4] = [0, 0, 0, 0];
         let mut diagonal: u8 = 0;
         let mut anti_diagonal: u8 = 0;
-        log!("{:?}", self.cells);
         for (r, row) in self.cells.iter().enumerate() {
             for (c, cell) in row.iter().enumerate() {
                if cell.is_empty() {
@@ -73,8 +65,6 @@ impl Board {
                 }
             }
         }
-        log!("rows {:?}", rows);
-        log!("columns {:?}", columns);
 
         return if rows.contains(&4) || columns.contains(&4) || diagonal == 4 || anti_diagonal == 4 {
             true
@@ -119,7 +109,6 @@ impl Cell {
         if &self.state.is_empty() == &true {
             return true;
         }
-        
         let sizes = [GobbletSize::Tiny, GobbletSize::Small, GobbletSize::Medium, GobbletSize::Large];
         let top_piece = &self.get_top_piece();
         let index_top = &sizes.iter().position(|&g: &GobbletSize| &g == top_piece.get_size()).unwrap();
@@ -155,10 +144,10 @@ mod board_tests {
     fn add_piece_to_board_should_return_none_if_added_successfully() {
         // Given
         let mut b = Board::new();
-        b.add_piece_to_board(&Coord::new(1, 3), Gobblet::new(GobbletSize::Medium, PlayerNumber::One, 1));
+        b.add_piece_to_board(&Coord::new(1, 3), Gobblet::new(GobbletSize::Medium, PlayerNumber::One));
 
         // When
-        let r = b.add_piece_to_board(&Coord::new(1, 3), Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1));
+        let r = b.add_piece_to_board(&Coord::new(1, 3), Gobblet::new(GobbletSize::Large, PlayerNumber::One));
 
         match r {
             Some(_) => assert_eq!(false, true, "Piece was reutrned!"),
@@ -169,68 +158,68 @@ mod board_tests {
     #[test]
     fn has_won_should_return_false_if_no_one_has_won() {
         let b = Board::new();
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, false);
     }
 
     #[test]
     fn has_won_should_return_true_if_a_row_is_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1);
+        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One);
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(1, i), gobblet.clone());
         }
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, true);
     }
     
     #[test]
     fn has_won_should_return_true_if_a_column_is_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1);
+        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One);
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(i, 1), gobblet.clone());
         }
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, true);
     }
 
     #[test]
     fn has_won_should_return_true_if_diagonal_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1);
+        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One);
         for i in 0..4 {
             b.add_piece_to_board(&Coord::new(i, i), gobblet.clone());
         }
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, true);
     }
 
     #[test]
     fn has_won_should_return_true_if_anti_diagonal_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1);
+        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One);
 
         b.add_piece_to_board(&Coord::new(0, 3), gobblet.clone());
         b.add_piece_to_board(&Coord::new(1, 2), gobblet.clone());
         b.add_piece_to_board(&Coord::new(2, 1), gobblet.clone());
         b.add_piece_to_board(&Coord::new(3, 0), gobblet.clone());
 
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, true);
     }
 
     #[test]
     fn has_won_should_return_false_if_anti_diagonal_not_filled() {
         let mut b = Board::new();
-        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One, 1);
+        let gobblet = Gobblet::new(GobbletSize::Large, PlayerNumber::One);
 
         b.add_piece_to_board(&Coord::new(0, 3), gobblet.clone());
         b.add_piece_to_board(&Coord::new(1, 2), gobblet.clone());
         b.add_piece_to_board(&Coord::new(2, 2), gobblet.clone());
         b.add_piece_to_board(&Coord::new(3, 0), gobblet.clone());
 
-        let r = b.has_won(&PlayerNumber::One);
+        let r = b.has_won(PlayerNumber::One);
         assert_eq!(r, false);
     }
 }
@@ -243,7 +232,7 @@ mod cell_tests {
     #[test]
     fn can_add_should_return_true_if_cell_is_empty() {
         let c = Cell::new();
-        let r = c.can_add(&Gobblet::new(GobbletSize::Tiny, PlayerNumber::Two, 1));
+        let r = c.can_add(&Gobblet::new(GobbletSize::Tiny, PlayerNumber::Two));
         assert_eq!(r, true);
     }
 
@@ -251,12 +240,12 @@ mod cell_tests {
     fn can_add_should_return_true_if_gobblet_is_larger_than_top_piece() {
         // Given Tiny Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Tiny, PlayerNumber::Two, 1));
+        c.add(Gobblet::new(GobbletSize::Tiny, PlayerNumber::Two));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two, 1));
-        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, PlayerNumber::Two, 1));
-        let l = c.can_add(&Gobblet::new(GobbletSize::Large, PlayerNumber::Two, 1));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, PlayerNumber::Two));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, PlayerNumber::Two));
 
         assert_eq!(s, true);
         assert_eq!(m, true);
@@ -268,12 +257,12 @@ mod cell_tests {
     fn can_add_should_return_false_if_gobblet_is_smaller_than_top_piece() {
         // Given Large Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Large, PlayerNumber::Two, 1));
+        c.add(Gobblet::new(GobbletSize::Large, PlayerNumber::Two));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two, 1));
-        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, PlayerNumber::Two, 1));
-        let l = c.can_add(&Gobblet::new(GobbletSize::Large, PlayerNumber::Two, 1));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two));
+        let m = c.can_add(&Gobblet::new(GobbletSize::Medium, PlayerNumber::Two));
+        let l = c.can_add(&Gobblet::new(GobbletSize::Large, PlayerNumber::Two));
 
         assert_eq!(s, false);
         assert_eq!(m, false);
@@ -284,10 +273,10 @@ mod cell_tests {
     fn can_add_should_return_false_if_gobblet_is_same_size() {
         // Given Large Piece in cell
         let mut c = Cell::new();
-        c.add(Gobblet::new(GobbletSize::Small, PlayerNumber::Two, 1));
+        c.add(Gobblet::new(GobbletSize::Small, PlayerNumber::Two));
 
         // When Small, Medium, Large 
-        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two, 1));
+        let s = c.can_add(&Gobblet::new(GobbletSize::Small, PlayerNumber::Two));
 
         assert_eq!(s, false);
     }

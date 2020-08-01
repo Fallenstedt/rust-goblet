@@ -6,21 +6,20 @@ use crate::game::utils::PlayerNumber;
 pub struct Player {
     name: String,
     hand: Hand,
-    number: PlayerNumber
 }
 
 impl Player {
     pub fn new(name: String, number: PlayerNumber) -> Player {
         let hand = Hand::new(number);
-        Player{ name, hand, number }
+        Player{ name, hand }
     }
 
     pub fn remove_piece_from_hand(&mut self, hand_section: u8) -> Option<Gobblet> {
         self.hand.remove_piece(hand_section)
     }
 
-    pub fn get_player_number(&self) -> &PlayerNumber {
-        &self.number
+    pub fn add_piece_to_hand(&mut self, gobblet: Gobblet, hand_section: u8) {
+        self.hand.add_piece(gobblet, hand_section);
     }
 }
 

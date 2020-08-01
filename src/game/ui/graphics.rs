@@ -111,8 +111,7 @@ impl Graphics {
                 PlayerNumber::Two => {
                     &self.context.set_fill_style(&red);
                     &self.context.set_stroke_style(&red_border);
-                },
-                _ => {}
+                }
             };
 
             path.arc(x, y, size, 0.0, 2.0 * f64::consts::PI).unwrap();

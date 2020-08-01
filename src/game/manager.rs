@@ -1,4 +1,4 @@
-use crate::wasm_bindgen::prelude::*;
+
 use crate::game::utils::coord::Coord;
 use crate::game::utils::{PlayerNumber, player_number_match};
 use super::logic::player::Player;
@@ -7,8 +7,6 @@ use super::logic::board::{Board};
 
 use js_sys::Math;
 
-
-#[wasm_bindgen]
 #[derive(Debug)]
 pub struct Manager {
     player1: Player,
@@ -18,7 +16,7 @@ pub struct Manager {
 }
 
 impl Manager {
-    pub fn new(name1: String, name2: String) -> Manager {
+    pub fn new(name1: String, name2: String) -> Self {
         let board = Board::new();
         let player1 = Player::new(name1, PlayerNumber::One);
         let player2 = Player::new(name2, PlayerNumber::Two); 
@@ -26,36 +24,31 @@ impl Manager {
         Manager{ player1, player2, board, turn:  Manager::random_turn() }
     }
 
-    pub fn move_gobblet_from_hand_to_coord(&mut self, coord: &Coord, quadrant: u8) -> Result<(), &str> {
-        let player = self.get_mut_player();
-
-        let gobblet = match player.remove_piece_from_hand(quadrant) {
-            Some(gobblet) => {
-                log!("Gobblet from hand {:#?}", gobblet);
-                gobblet
-            },
-            None => panic!("Failed to obtain gobblet. This shouldn't have happened")
-        };
-
-        match self.board.add_piece_to_board(coord, gobblet) {
-            None => Ok(()),
-            Some(gobblet) => Err("Unable to add piece to board, returning piece to hand")
+    pub fn move_gobblet_from_hand_to_board(&mut self, coord: &Coord, quadrant: u8) -> Option<Gobblet> {   
+        match self.get_mut_player().remove_piece_from_hand(quadrant) {
+            Some(gobblet) => self.board.add_piece_to_board(coord, gobblet),
+            None => None,
         }
     }
 
-    pub fn move_gobblet_on_board(&mut self, source: &Coord, destination: &Coord) -> Result<(), &str> {
+    pub fn move_gobblet_on_board(&mut self, source: &Coord, destination: &Coord) -> Option<Gobblet> {
         let gobblet = match self.board.remove_piece_from_board(source, &self.turn) {
             Some(g) => g,
             None => panic!("Expected piece to exist on board")
         };
 
-        match self.board.add_piece_to_board(destination, gobblet) {
-            None => Ok(()),
-            Some(g) => {
-                self.board.add_piece_to_board(source, g).unwrap();
-                Err("Unable to move piece to board, returning piece to board")
-            }
+        self.board.add_piece_to_board(destination, gobblet)
+    }
+
+    pub fn return_gobblet_to_board(&mut self, coord: &Coord, gobblet: Gobblet) {
+        match self.board.add_piece_to_board(coord, gobblet) {
+            Some(_) => panic!("Failed to return piece to {:?}", coord),
+            None => ()
         }
+    }
+
+    pub fn return_gobblet_to_hand(&mut self, gobblet: Gobblet, section: u8) {
+        self.get_mut_player().add_piece_to_hand(gobblet, section);
     }
 
     pub fn has_won(&self) -> Option<PlayerNumber> {
@@ -77,14 +70,6 @@ impl Manager {
             PlayerNumber::Two => PlayerNumber::One,
         };
         log!("Next turn. {:?}", self.turn);
-    }
-
-    fn get_player(&self) -> &Player {
-        if player_number_match(&self.turn, &PlayerNumber::One) {
-            &self.player1
-        } else {
-            &self.player2
-        }
     }
 
     fn get_mut_player(&mut self) -> &mut Player {

@@ -145,14 +145,48 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
                 let coord = graphics.get_coord_for_rectangle(ending_rectangle);
                 let quadrant = graphics.get_circle_quadrant(circle.get() as usize);               
 
-                manager.move_gobblet_from_hand_to_coord(coord, quadrant).unwrap();
-                graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize);
+                match manager.move_gobblet_from_hand_to_board(coord, quadrant) {
+                    Some(gobblet) => {
+                        // return piece to hand
+                        manager.return_gobblet_to_hand(gobblet, quadrant);
+                        
+                        // repaint it back at the hand
+                        let (original_x, original_y) = original_circle_x_y.get();
+                        graphics.update_circle_pos(circle.get() as usize, original_x, original_y);
+                        graphics.draw_circles();
+
+                        // reset interaction state
+                        pressed.set(false);
+                        circle.set(-1);
+                        initial_rectangle.set(-1);
+                        return
+                    },
+                    None => graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize)
+                };
             } else {
                 // piece came from board
                 let source = graphics.get_coord_for_rectangle(initial_rectangle.get() as usize);
                 let destination = graphics.get_coord_for_rectangle(ending_rectangle);
-                manager.move_gobblet_on_board(source, destination);
-                graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize);
+
+                match manager.move_gobblet_on_board(source, destination) {
+                    None => graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize),
+                    Some(gobblet) => {
+                        // return the piece to source
+                        manager.return_gobblet_to_board(source, gobblet);
+
+                        // repaint it at source rectangle
+                        let (original_x, original_y) = original_circle_x_y.get();
+                        graphics.update_circle_pos(circle.get() as usize, original_x, original_y);
+                        graphics.draw_circles();
+
+                        // reset interaction state
+                        pressed.set(false);
+                        circle.set(-1);
+                        initial_rectangle.set(-1);
+                        return
+                    }
+                };
+
             };
             
             pressed.set(false);
@@ -171,6 +205,5 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
         }) as Box<dyn FnMut(_)>);
         canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
-    }
-    
+    }    
 }

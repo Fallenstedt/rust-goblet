@@ -13,22 +13,24 @@ impl Hand {
         
         for i in 1..4 {
             let mut group = Vec::with_capacity(4);
-            group.push(Gobblet::new(GobbletSize::Tiny, number, i));
-            group.push(Gobblet::new(GobbletSize::Small, number, i));
-            group.push(Gobblet::new(GobbletSize::Medium, number, i));
-            group.push(Gobblet::new(GobbletSize::Large, number, i));
+            group.push(Gobblet::new(GobbletSize::Tiny, number));
+            group.push(Gobblet::new(GobbletSize::Small, number));
+            group.push(Gobblet::new(GobbletSize::Medium, number));
+            group.push(Gobblet::new(GobbletSize::Large, number));
 
             state.insert(i, group);
         }
         Hand { state }
     }
 
-    pub fn remove_piece(&mut self, s: u8) -> Option<Gobblet> {
-        let hand_section = self.state.get_mut(&s);
-
-        match hand_section {
+    pub fn remove_piece(&mut self, section: u8) -> Option<Gobblet> {
+        match self.state.get_mut(&section) {
             Some(pieces) => pieces.pop(),
             None => None
         }
+    }
+
+    pub fn add_piece(&mut self, gobblet: Gobblet, section: u8) {
+         self.state.get_mut(&section).unwrap().push(gobblet);
     }
 }
