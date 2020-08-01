@@ -66,11 +66,7 @@ impl Board {
             }
         }
 
-        return if rows.contains(&4) || columns.contains(&4) || diagonal == 4 || anti_diagonal == 4 {
-            true
-        } else {
-            false
-        }
+        return rows.contains(&4) || columns.contains(&4) || diagonal == 4 || anti_diagonal == 4
     }
 
     // Create 2 dimenson array of cells. 
