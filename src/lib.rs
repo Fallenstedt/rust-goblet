@@ -1,21 +1,19 @@
-
 extern crate js_sys;
 extern crate wasm_bindgen;
 
+mod game;
 mod macros;
 mod utils;
-mod game;
 
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
-use std::cell::{Cell, RefCell};   
 use web_sys::HtmlCanvasElement;
 
-use crate::wasm_bindgen::prelude::*;
-use crate::wasm_bindgen::JsCast;
 use crate::game::manager::Manager;
 use crate::game::ui::graphics::Graphics;
-use crate::game::utils::{player_number_match};
-
+use crate::game::utils::player_number_match;
+use crate::wasm_bindgen::prelude::*;
+use crate::wasm_bindgen::JsCast;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -37,73 +35,70 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
     let graphics = Rc::new(RefCell::new(Graphics::new(canvas.clone())));
     let manager = Rc::new(RefCell::new(Manager::new(name1, name2)));
 
-    let pressed = Rc::new(Cell::new(false));
     let circle = Rc::new(Cell::new(-1));
     let initial_rectangle = Rc::new(Cell::new(-1));
-    let original_circle_x_y = Rc::new(Cell::new((0.0,0.0)));
+    let original_circle_x_y = Rc::new(Cell::new((0.0, 0.0)));
 
     // process mousedown
     {
         let graphics = graphics.clone();
         let manager = manager.clone();
 
-        let pressed = pressed.clone();
         let circle = circle.clone();
         let original_circle_x_y = original_circle_x_y.clone();
-        let initial_rectangle= initial_rectangle.clone();
+        let initial_rectangle = initial_rectangle.clone();
 
-        
         let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             let x = event.offset_x() as f64;
             let y = event.offset_y() as f64;
-            let graphics = graphics.borrow();
+            let mut graphics = graphics.borrow_mut();
             let manager = manager.borrow();
 
             circle.set(graphics.get_largest_clicked_circle_index(x, y));
-            
             if circle.get() > -1 {
-                
                 let current_turn = manager.get_turn();
                 let shape_owner = graphics.get_circle(circle.get() as usize).get_player();
 
                 if player_number_match(shape_owner, current_turn) {
-                    pressed.set(true);
+                    graphics.set_pressed(true);
                     initial_rectangle.set(graphics.get_clicked_rectangle_index(x, y));
                     original_circle_x_y.set(graphics.get_circle(circle.get() as usize).get_pos())
                 } else {
-                    pressed.set(false);
+                    graphics.set_pressed(false);
                     circle.set(-1);
                     initial_rectangle.set(-1);
-                }                
+                }
             }
-
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
     // process mouse move
     {
-        let pressed = pressed.clone();
         let circle = circle.clone();
         let graphics = graphics.clone();
 
         let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            if pressed.get() == true && circle.get() > -1 {
+            let mut graphics = graphics.borrow_mut();
+
+            if graphics.is_pressed() && circle.get() > -1 {
                 let x = event.offset_x() as f64;
                 let y = event.offset_y() as f64;
-                graphics.borrow_mut().update_circle_pos(circle.get() as usize, x, y);
-                graphics.borrow_mut().draw_circles();
-            
+                graphics.update_circle_pos(circle.get() as usize, x, y);
+                graphics.draw_circles();
             }
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
     //process mouse up
     {
-        let pressed = pressed.clone();
         let circle = circle.clone();
         let initial_rectangle = initial_rectangle.clone();
         let original_circle_x_y = original_circle_x_y.clone();
@@ -112,17 +107,16 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
 
         let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             let x = event.offset_x() as f64;
-            let y = event.offset_y() as f64;            
+            let y = event.offset_y() as f64;
             let mut graphics = graphics.borrow_mut();
             let mut manager = manager.borrow_mut();
             let ending_rectangle = graphics.get_clicked_rectangle_index(x, y);
-            
             // user didn't click on circle
             if circle.get() < 0 {
-                pressed.set(false);
+                graphics.set_pressed(false);
                 circle.set(-1);
                 initial_rectangle.set(-1);
-                return
+                return;
             }
 
             // user didn't drop a circle on a rectangle
@@ -131,79 +125,91 @@ pub fn start_game(canvas: HtmlCanvasElement, name1: String, name2: String) {
                 graphics.update_circle_pos(circle.get() as usize, original_x, original_y);
                 graphics.draw_circles();
 
-                pressed.set(false);
+                graphics.set_pressed(false);
                 circle.set(-1);
                 initial_rectangle.set(-1);
-                return
+                return;
             }
 
             // piece came from hand
             let ending_rectangle = ending_rectangle as usize;
-            if initial_rectangle.get() < 0 {
-                log!("User is getting circle from hand");
-                
-                let coord = graphics.get_coord_for_rectangle(ending_rectangle);
-                let quadrant = graphics.get_circle_quadrant(circle.get() as usize);               
+            match initial_rectangle.get() < 0 {
+                true => {
+                    let coord = graphics.get_coord_for_rectangle(ending_rectangle);
+                    let quadrant = graphics.get_circle_quadrant(circle.get() as usize);
 
-                match manager.move_gobblet_from_hand_to_board(coord, quadrant) {
-                    Some(gobblet) => {
-                        // return piece to hand
-                        manager.return_gobblet_to_hand(gobblet, quadrant);
-                        
-                        // repaint it back at the hand
-                        let (original_x, original_y) = original_circle_x_y.get();
-                        graphics.update_circle_pos(circle.get() as usize, original_x, original_y);
-                        graphics.draw_circles();
+                    match manager.move_gobblet_from_hand_to_board(coord, quadrant) {
+                        Some(gobblet) => {
+                            // return piece to hand
+                            manager.return_gobblet_to_hand(gobblet, quadrant);
+                            // repaint it back at the hand
+                            let (original_x, original_y) = original_circle_x_y.get();
+                            graphics.update_circle_pos(
+                                circle.get() as usize,
+                                original_x,
+                                original_y,
+                            );
+                            graphics.draw_circles();
+                            // reset interaction state
+                            graphics.set_pressed(false);
+                            circle.set(-1);
+                            initial_rectangle.set(-1);
+                            return;
+                        }
+                        None => graphics.position_circle_center_of_rectangle(
+                            ending_rectangle,
+                            circle.get() as usize,
+                        ),
+                    };
+                }
+                false => {
+                    // piece came from board
+                    let source = graphics.get_coord_for_rectangle(initial_rectangle.get() as usize);
+                    let destination = graphics.get_coord_for_rectangle(ending_rectangle);
 
-                        // reset interaction state
-                        pressed.set(false);
-                        circle.set(-1);
-                        initial_rectangle.set(-1);
-                        return
-                    },
-                    None => graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize)
-                };
-            } else {
-                // piece came from board
-                let source = graphics.get_coord_for_rectangle(initial_rectangle.get() as usize);
-                let destination = graphics.get_coord_for_rectangle(ending_rectangle);
+                    match manager.move_gobblet_on_board(source, destination) {
+                        None => graphics.position_circle_center_of_rectangle(
+                            ending_rectangle,
+                            circle.get() as usize,
+                        ),
+                        Some(gobblet) => {
+                            // return the piece to source
+                            manager.return_gobblet_to_board(source, gobblet);
 
-                match manager.move_gobblet_on_board(source, destination) {
-                    None => graphics.position_circle_center_of_rectangle(ending_rectangle, circle.get() as usize),
-                    Some(gobblet) => {
-                        // return the piece to source
-                        manager.return_gobblet_to_board(source, gobblet);
+                            // repaint it at source rectangle
+                            let (original_x, original_y) = original_circle_x_y.get();
+                            graphics.update_circle_pos(
+                                circle.get() as usize,
+                                original_x,
+                                original_y,
+                            );
+                            graphics.draw_circles();
 
-                        // repaint it at source rectangle
-                        let (original_x, original_y) = original_circle_x_y.get();
-                        graphics.update_circle_pos(circle.get() as usize, original_x, original_y);
-                        graphics.draw_circles();
-
-                        // reset interaction state
-                        pressed.set(false);
-                        circle.set(-1);
-                        initial_rectangle.set(-1);
-                        return
-                    }
-                };
-
+                            // reset interaction state
+                            graphics.set_pressed(false);
+                            circle.set(-1);
+                            initial_rectangle.set(-1);
+                            return;
+                        }
+                    };
+                }
             };
             
-            pressed.set(false);
+            graphics.set_pressed(false);
             circle.set(-1);
             initial_rectangle.set(-1);
 
             match manager.has_won() {
                 Some(player) => {
                     log!("Game Over! {:?} won", player);
-                    return
-                },
-                None => manager.change_turn()
+                    return;
+                }
+                None => manager.change_turn(),
             }
-
-
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
-    }    
+    }
 }

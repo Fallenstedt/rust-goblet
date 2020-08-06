@@ -1,6 +1,9 @@
 use crate::wasm_bindgen::{JsCast, JsValue};
 
 use std::f64;
+use std::cell::{Cell};
+use std::rc::Rc;
+
 use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
 
 use super::shapes::{Rectangle, Circle};
@@ -14,7 +17,8 @@ pub struct Graphics {
     element: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
     rectangles: Vec<Rectangle>,
-    circles: Vec<Circle>
+    circles: Vec<Circle>,
+    pressed: Rc<Cell<bool>>
 }
 
 impl Graphics {
@@ -29,7 +33,16 @@ impl Graphics {
 
         let rectangles = Graphics::create_board(&context, &element);
         let circles = Graphics::create_hand(&context);
-        Graphics { element, context, rectangles, circles }
+        let pressed = Rc::new(Cell::new(false));
+        Graphics { element, context, rectangles, circles, pressed }
+    }
+
+    pub fn set_pressed(&mut self, state: bool) {
+        &self.pressed.set(state);
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.pressed.get()
     }
 
     pub fn get_clicked_rectangle_index(&self, x: f64, y: f64) -> isize {
@@ -80,7 +93,7 @@ impl Graphics {
         index = clicked_circles.get(0).unwrap().0 as isize;
         index
     }
-
+    
     pub fn position_circle_center_of_rectangle(&mut self, rectange_index: usize, circle_index: usize) {
         let rectangle = self.rectangles.get(rectange_index).unwrap();
         let circle = self.circles.get_mut(circle_index).unwrap();
