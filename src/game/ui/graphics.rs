@@ -1,25 +1,23 @@
 use crate::wasm_bindgen::{JsCast, JsValue};
 
 use std::f64;
-use std::cell::{Cell};
-use std::rc::Rc;
+
 
 use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, Path2d};
 
 use super::shapes::{Rectangle, Circle};
+use super::interaction::Interaction;
 use crate::game::utils::coord::Coord;
 use crate::game::utils::PlayerNumber;
 
 
-
 #[derive(Debug, Clone)]
 pub struct Graphics {
+    pub interaction: Interaction,
     element: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
     rectangles: Vec<Rectangle>,
     circles: Vec<Circle>,
-    pressed: Rc<Cell<bool>>,
-    chosen_circle: Rc<Cell<isize>>
 }
 
 impl Graphics {
@@ -34,25 +32,14 @@ impl Graphics {
 
         let rectangles = Graphics::create_board(&context, &element);
         let circles = Graphics::create_hand(&context);
-        let pressed = Rc::new(Cell::new(false));
-        let chosen_circle = Rc::new(Cell::new(-1));
-        Graphics { element, context, rectangles, circles, pressed, chosen_circle }
-    }
-
-    pub fn set_pressed(&mut self, state: bool) {
-        &self.pressed.set(state);
-    }
-
-    pub fn is_pressed(&self) -> bool {
-        self.pressed.get()
-    }
-
-    pub fn get_chosen_circle(&self) -> isize {
-        self.chosen_circle.get()
-    }
-
-    pub fn set_chosen_circle(&self, value: isize) {
-        self.chosen_circle.set(value)
+        let interaction = Interaction::new();
+        Graphics { 
+            interaction,
+            element, 
+            context, 
+            rectangles, 
+            circles, 
+        }
     }
 
     pub fn get_clicked_rectangle_index(&self, x: f64, y: f64) -> isize {
@@ -71,18 +58,18 @@ impl Graphics {
     }
 
     pub fn update_circle_pos(&mut self,  x: f64, y: f64) {
-        let index = self.get_chosen_circle() as usize;
+        let index = self.interaction.get_chosen_circle() as usize;
         let circle = self.circles.get_mut(index).unwrap();  
         circle.set_pos(x, y);
     }
         
     pub fn get_circle_quadrant(&self) -> u8  {
-        let index = self.get_chosen_circle() as usize;
+        let index = self.interaction.get_chosen_circle() as usize;
         self.circles.get(index).unwrap().get_quadrant()
     }
 
     pub fn get_circle(&self) -> &Circle  {
-        let index = self.get_chosen_circle();
+        let index = self.interaction.get_chosen_circle();
         return if index > -1 {
             self.circles.get(index as usize).unwrap()
         } else {
@@ -102,18 +89,18 @@ impl Graphics {
         }
 
         if clicked_circles.len() == 0 {
-            self.chosen_circle.set(index);
+            self.interaction.set_chosen_circle(index);
             return;
         }
         
         // sort circles by largest -> smallest
         clicked_circles.sort_by(|a, b| b.1.get_size().partial_cmp(&a.1.get_size()).unwrap());
         index = clicked_circles.get(0).unwrap().0 as isize;
-        self.chosen_circle.set(index)
+        self.interaction.set_chosen_circle(index)
     }
     
     pub fn position_circle_center_of_rectangle(&mut self, rectange_index: usize) {
-        let circle_index = self.get_chosen_circle() as usize;
+        let circle_index = self.interaction.get_chosen_circle() as usize;
 
         let rectangle = self.rectangles.get(rectange_index).unwrap();
         let circle = self.circles.get_mut(circle_index).unwrap();
