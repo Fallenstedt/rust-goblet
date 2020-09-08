@@ -69,7 +69,6 @@ impl Manager {
             PlayerNumber::One => PlayerNumber::Two,
             PlayerNumber::Two => PlayerNumber::One,
         };
-        log!("Next turn. {:?}", self.turn);
     }
 
     fn get_mut_player(&mut self) -> &mut Player {
