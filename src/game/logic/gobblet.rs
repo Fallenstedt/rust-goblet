@@ -13,7 +13,6 @@ pub enum GobbletSize {
 pub struct Gobblet {
     size: GobbletSize,
     player_number: PlayerNumber,
-    // quadrant: u8
 }
 
 impl Gobblet {
