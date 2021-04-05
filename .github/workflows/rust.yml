@@ -1,10 +1,8 @@
 name: Rust + Webpack
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  - push
+  - pull_request
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,3 +27,12 @@ jobs:
       run: |
         yarn
         yarn test
+    - name: Build game
+      run: yarn build && cp static/* dist/
+      if: matrix.os == 'ubuntu-latest' && matrix.node_version == '12'
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+      if: github.ref == 'refs/heads/master' && matrix.os == 'ubuntu-latest' && matrix.node_version == '12'
