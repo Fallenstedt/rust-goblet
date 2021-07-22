@@ -1,6 +1,6 @@
 # WebAssembly Gobblet
 
-This is a simple game called [Gobblet](https://en.wikipedia.org/wiki/Gobblet) built using Rust and WebAssembly. [You can read the blog post about it here](https://dev.to/fallenstedt/making-a-canvas-based-game-with-rust-and-webassembly-2l46)
+This is a simple game called [Gobblet](https://en.wikipedia.org/wiki/Gobblet) built using Rust and WebAssembly. 
 
 ![preview](./preview.png)
 
